@@ -640,7 +640,7 @@ arminst STR(armcode const &aFetchedOpcode, uint32_t aCPU, int64_t aSequenceNo) {
 
   SemanticInstruction *inst(new SemanticInstruction(aFetchedOpcode.thePC, aFetchedOpcode.theOpcode,
                                                     aFetchedOpcode.theBPState, aCPU, aSequenceNo));
-  inst->setClass(clsLoad, codeLoad);
+  inst->setClass(clsStore, codeStore);
   eAccType acctype = kAccType_NORMAL;
 
   if (is_unsigned) {
