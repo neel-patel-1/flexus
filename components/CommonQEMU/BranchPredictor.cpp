@@ -51,6 +51,8 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
+#include <map>
+#include <iterator>
 
 #include <boost/none.hpp>
 #include <boost/throw_exception.hpp>
@@ -90,8 +92,8 @@ namespace SharedTypes {
 
 // Data structure for tracking number of unique targets per ind. branch
 typedef struct {
-  std::set<VirtualMemoryAddress> targetList;
-  Stat::StatCounter theNumTargets;
+  std::set<VirtualMemoryAddress> *targetList;
+  // Stat::StatCounter theNumTargets;
 } indir_target_meta_t;
 
 struct BTBEntry {
@@ -409,6 +411,12 @@ struct CombiningImpl : public BranchPredictor {
   Bimodal theMeta;
   gShare theGShare;
 
+  uint32_t theFeedbackCount;
+
+  // Data structure for studying each targets
+  std::map<VirtualMemoryAddress, indir_target_meta_t *> indirectTargetTracker;
+  const std::string fname;
+
   // MARK: Refactor branch types and take into account direct/indirect
   Stat::StatCounter theBranches; // Retired Branches
   Stat::StatCounter theBranches_Unconditional;
@@ -443,8 +451,9 @@ struct CombiningImpl : public BranchPredictor {
   Stat::StatCounter theMispredict_Returns;
 
   CombiningImpl(std::string const &aName, uint32_t anIndex)
-      : theName(aName), theIndex(anIndex), theSerial(0), theBTB(512, 4), theBimodal(16384),
-        theMeta(16384), theGShare(13), theBranches(aName + "-branches"),
+      : theName(aName), theIndex(anIndex), theSerial(0), theBTB(2048, 16), theBimodal(16384),
+        theMeta(16384), theGShare(13), fname(aName + "_indir_targets.txt"),
+        theBranches(aName + "-branches"),
         theBranches_Unconditional(aName + "-branches:unconditional"),
         theBranches_Conditional(aName + "-branches:conditional"),
         theBranches_Call(aName + "-branches:call"),
@@ -469,6 +478,11 @@ struct CombiningImpl : public BranchPredictor {
         theMispredict_Target(aName + "-mispredict:target"),
         theMispredict_IndirectTargets(aName + "-mispredict:target:indirect"),
         theMispredict_Returns(aName + "-mispredict:returns") {
+    std::ofstream finit;
+    finit.open(fname.c_str(), std::ofstream::out | std::ofstream::trunc);
+    finit << "Indirect branches for " << fname << std::endl;
+    finit.close();
+    theFeedbackCount = 0;
   }
 
   CombiningImpl(std::string const &aName, uint32_t anIndex, uint32_t aBTBSets, uint32_t aBTBWays)
@@ -784,6 +798,49 @@ struct CombiningImpl : public BranchPredictor {
   void feedback(BranchFeedback const &aFeedback) {
     stats(aFeedback);
     bool is_new = theBTB.update(aFeedback);
+
+    if (aFeedback.theActualType == kIndirectCall || aFeedback.theActualType == kIndirectReg) {
+      std::map<VirtualMemoryAddress, indir_target_meta_t *>::iterator indir_iter =
+          indirectTargetTracker.find(aFeedback.thePC);
+      if (indir_iter == indirectTargetTracker.end()) {
+        // new indirect branch
+        indir_target_meta_t *newMeta = new indir_target_meta_t();
+        std::set<VirtualMemoryAddress> *newTargetList = new std::set<VirtualMemoryAddress>();
+        newMeta->targetList = newTargetList;
+        newMeta->targetList->insert(aFeedback.theActualTarget);
+        /*
+        std::pair<std::set<VirtualMemoryAddress> * ::iterator, bool> rval =
+            newMeta->targetList->insert(aFeedback.theActualTarget);
+        DBG_AssertSev(Verb, (rval.second == true),
+                      (<< "Tried to insert target " << std::hex << aFeedback.theActualTarget
+                       << std::dec << ", into indirect target tracker but failed!"));
+                       */
+        indirectTargetTracker.insert(std::make_pair(aFeedback.thePC, newMeta));
+      } else {
+        // update the tracker with a new target
+        indir_target_meta_t *newMeta = indir_iter->second;
+        newMeta->targetList->insert(aFeedback.theActualTarget);
+        DBG_(Verb, (<< "Inserting " << std::hex << aFeedback.theActualTarget
+                    << " into newMeta map for key: " << std::hex << aFeedback.thePC
+                    << ", new size = " << newMeta->targetList->size()));
+      }
+#define TARGET_PRINT_INTERVAL (1 << 10)
+      if (!(theFeedbackCount & (TARGET_PRINT_INTERVAL - 1))) {
+        std::ofstream fout;
+        fout.open(fname.c_str(), std::fstream::out | std::fstream::app);
+        fout << "-----------------" << std::endl;
+        for (auto &i : indirectTargetTracker) {
+          fout << "Indirect branch " << std::hex << i.first << std::dec
+               << ", has following targets: { ";
+          for (auto &j : *(i.second->targetList)) {
+            fout << std::hex << j << ", ";
+          }
+          fout << "}" << std::endl;
+        }
+        fout.close();
+      }
+      theFeedbackCount++;
+    }
 
     if (aFeedback.theActualType == kConditional) {
       if (is_new) {
@@ -1122,12 +1179,12 @@ struct FastCombiningImpl : public FastBranchPredictor {
         aBPState.thePredictedTarget = VirtualMemoryAddress(0);
       }
       aBPState.theGShareShiftReg = theGShare.shiftReg();
-      // Need to push address onto retstack
+      // FIXME: There's no RAS right now, needs to be implemented.
       break;
     case kReturn:
       ++thePredictions;
       ++thePredictions_Returns;
-      // Need to pop retstack
+      // FIXME: There's no RAS right now, needs to be implemented.
       break;
     case kIndirectCall:
     case kIndirectReg:
