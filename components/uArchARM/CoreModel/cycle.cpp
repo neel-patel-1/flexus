@@ -1603,6 +1603,10 @@ void CoreImpl::commit(boost::intrusive_ptr<Instruction> anInstruction) {
 
     throw ResynchronizeWithQemuException();
   }
+  /* Dump PC to file if logging is enabled */
+  if (collectTrace) {
+    trace_stream << anInstruction->pc() << std::endl;
+  }
   DBG_(Iface, (<< "uARCH Validated "));
   DBG_(VVerb, (<< std::internal << *anInstruction << std::left));
 }

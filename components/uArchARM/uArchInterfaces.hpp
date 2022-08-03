@@ -572,6 +572,7 @@ struct uArchOptions_t {
   uint32_t fpDivOpPipelineResetTime;
   uint32_t fpSqrtOpLatency;
   uint32_t fpSqrtOpPipelineResetTime;
+  bool collectTrace;
 };
 
 struct Instruction : public Flexus::SharedTypes::AbstractInstruction {
