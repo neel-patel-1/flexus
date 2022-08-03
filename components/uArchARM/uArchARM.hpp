@@ -108,6 +108,7 @@ COMPONENT_PARAMETERS(
   PARAMETER( FpDivOpPipelineResetTime, uint32_t, "Number of cycles required between subsequent FP DIV operations", "fpDivOpPipelineResetTime", 1)
   PARAMETER( FpSqrtOpLatency, uint32_t, "End-to-end latency of an FP SQRT operation", "fpSqrtOpLatency", 1)
   PARAMETER( FpSqrtOpPipelineResetTime, uint32_t, "Number of cycles required between subsequent FP SQRT operations", "fpSqrtOpPipelineResetTime", 1)
+  PARAMETER( CollectWorkTrace, bool, "Collect working set trace", "CollectWorkTrace", false)
 );
 
 typedef std::pair<int, bool> dispatch_status;

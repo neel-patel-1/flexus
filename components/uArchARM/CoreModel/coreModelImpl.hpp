@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <memory>
 #include <vector>
@@ -508,6 +509,11 @@ private:
   std::vector<uint32_t> intMultCyclesToReady;
   std::vector<uint32_t> fpAluCyclesToReady;
   std::vector<uint32_t> fpMultCyclesToReady;
+
+  /* Msutherl: Additions for RPCProc */
+  bool collectTrace;
+  std::string trace_fname;
+  std::ofstream trace_stream;
 
   // CONSTRUCTION
   //==========================================================================

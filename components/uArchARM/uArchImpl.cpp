@@ -220,6 +220,8 @@ public:
     options.fpDivOpPipelineResetTime = cfg.FpDivOpPipelineResetTime;
     options.fpSqrtOpLatency = cfg.FpSqrtOpLatency;
     options.fpSqrtOpPipelineResetTime = cfg.FpSqrtOpPipelineResetTime;
+    /* Msutherl: Trace for rpcproc */
+    options.collectTrace = cfg.CollectWorkTrace;
 
     theMicroArch =
         microArch::construct(options, ll::bind(&uArchARMComponent::squash, this, ll::_1),

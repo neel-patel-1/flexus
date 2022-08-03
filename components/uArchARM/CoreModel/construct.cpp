@@ -228,7 +228,9 @@ CoreImpl::CoreImpl(uArchOptions_t options
       fpSqrtOpPipelineResetTime(options.fpSqrtOpPipelineResetTime),
       // Each FU starts ready to accept an operation
       intAluCyclesToReady(options.numIntAlu, 0), intMultCyclesToReady(options.numIntMult, 0),
-      fpAluCyclesToReady(options.numFpAlu, 0), fpMultCyclesToReady(options.numFpMult, 0) {
+      fpAluCyclesToReady(options.numFpAlu, 0), fpMultCyclesToReady(options.numFpMult, 0),
+      collectTrace(options.collectTrace),
+      trace_fname("core_" + std::to_string(theNode) + "_retinsts.txt") {
 
   // Msutherl - for MMU verification. Remove when done
   theQEMUCPU = Flexus::Qemu::Processor::getProcessor(theNode);
@@ -288,6 +290,10 @@ CoreImpl::CoreImpl(uArchOptions_t options
   theCycleCategory = kTBUser;
 
   cpuHalted = false;
+
+  if (collectTrace) {
+    trace_stream = std::ofstream(trace_fname, std::ofstream::out | std::ofstream::trunc);
+  }
 }
 
 void CoreImpl::resetARM() {
