@@ -45,6 +45,7 @@
 #include "ARMTranslationGranules.hpp"
 #include <cmath>
 #include <core/debug/debug.hpp>
+#include <components/CommonQEMU/Translation.hpp>
 
 namespace nMMU {
 
@@ -217,7 +218,7 @@ uint64_t TG1_Granule::GetLowerAddressRangeLimit() const {
  * ARMv8 Ref. Manual, page D4-2045
  */
 uint64_t TG1_Granule::GetUpperAddressRangeLimit() const {
-  return 0xffffffffffffffff;
+  return Flexus::SharedTypes::qemuFaultAddress;
 }
 
 } // namespace nMMU

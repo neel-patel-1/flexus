@@ -189,7 +189,8 @@ private:
     }
 
     if (theRedirect[anIndex]) {
-      thePC[anIndex] = theRedirectPC[anIndex];
+      if (theRedirectPC[anIndex] > 0x1000)
+        thePC[anIndex] = theRedirectPC[anIndex];
 #if FLEXUS_TARGET_IS(v9)
       theNextPC[anIndex] = theRedirectNextPC[anIndex];
 #endif
