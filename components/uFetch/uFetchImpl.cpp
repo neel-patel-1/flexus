@@ -560,8 +560,9 @@ private:
       xlat.thePaddr = cpu(anIndex)->translateVirtualAddress(xlat.theVaddr);
       paddr = xlat.thePaddr;
       if (paddr == 0) {
-        assert(false);
-        DBG_(VVerb, (<< "Translation failed!"));
+        DBG_Assert(false, (<< "Translation failed because PADDR is zero!"));
+      } else if (paddr == qemuFaultAddress) {
+        DBG_(Dev, (<< "Faulty translation - VADDR: " << vaddr << ", PADDR: " << paddr));
         ++theFailedTranslations;
         return true; // Failed translations are treated as hits - they will
                      // cause an MMU miss in the pipe.

@@ -120,12 +120,10 @@ bool PageWalk::walk(TranslationTransport &aTranslation) {
     DBG_(VVerb, (<< "Walking " << *basicPointer->theInstruction));
   }
   if (validBit != true) {
-    if (basicPointer->isData() && basicPointer->theInstruction) {
-      basicPointer->theInstruction->forceResync();
-    } else {
-      basicPointer->setPagefault();
-    }
     basicPointer->setDone();
+    // Page fault detection will automatically force resync the instruction at retirement
+    basicPointer->setPagefault();
+    DBG_(VVerb, (<< "Found invalid translation for " << basicPointer->theVaddr));
     return false;
   }
   //    DBG_Assert( validBit == true , ( << "Encountered INVALID entry in

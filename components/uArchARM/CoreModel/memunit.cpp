@@ -529,6 +529,7 @@ void CoreImpl::pushTranslation(TranslationPtr aTranslation) {
     //        lsq_entry->theDependance->squash();
     //        insn->squash();
     insn->pageFault();
+    insn->forceResync();
     //        squashFrom(insn);
   }
 

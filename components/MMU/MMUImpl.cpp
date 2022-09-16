@@ -226,9 +226,8 @@ public:
   }
 
   void saveState(std::string const &aDirName) {
-    std::ofstream iFile, dFile;
-    iFile.open(aDirName + "/" + statName() + "-itlb", std::ofstream::out | std::ofstream::app);
-    dFile.open(aDirName + "/" + statName() + "-dtlb", std::ofstream::out | std::ofstream::app);
+    std::ofstream iFile(aDirName + "/" + statName() + "-itlb", std::ofstream::out);
+    std::ofstream dFile(aDirName + "/" + statName() + "-dtlb", std::ofstream::out);
 
     boost::archive::text_oarchive ioarch(iFile);
     boost::archive::text_oarchive doarch(dFile);
@@ -241,26 +240,27 @@ public:
   }
 
   void loadState(std::string const &aDirName) {
-    std::ifstream iFile, dFile;
-    iFile.open(aDirName + "/" + statName() + "-itlb", std::ifstream::in);
-    dFile.open(aDirName + "/" + statName() + "-dtlb", std::ifstream::in);
+    std::ifstream iFile(aDirName + "/" + statName() + "-itlb", std::ifstream::in);
+    std::ifstream dFile(aDirName + "/" + statName() + "-dtlb", std::ifstream::in);
 
     boost::archive::text_iarchive iiarch(iFile);
     boost::archive::text_iarchive diarch(dFile);
 
-    uint64_t iSize = theInstrTLB.capacity();
-    uint64_t dSize = theDataTLB.capacity();
+    size_t iSize = theInstrTLB.capacity();
+    size_t dSize = theDataTLB.capacity();
     iiarch >> theInstrTLB;
     diarch >> theDataTLB;
     if (iSize != theInstrTLB.capacity()) {
+      size_t old_size = theInstrTLB.capacity();
       theInstrTLB.clear();
       theInstrTLB.resize(iSize);
-      DBG_(Dev, (<< "Changing iTLB capacity from " << theInstrTLB.capacity() << " to " << iSize));
+      DBG_(Dev, (<< "Changing iTLB capacity from " << old_size << " to " << iSize));
     }
     if (dSize != theDataTLB.capacity()) {
+      size_t old_size = theDataTLB.capacity();
       theDataTLB.clear();
       theDataTLB.resize(dSize);
-      DBG_(Dev, (<< "Changing dTLB capacity from " << theInstrTLB.capacity() << " to " << iSize));
+      DBG_(Dev, (<< "Changing dTLB capacity from " << old_size << " to " << dSize));
     }
     DBG_(Dev, (<< "Size - iTLB:" << theInstrTLB.capacity() << ", dTLB:" << theDataTLB.capacity()));
 
@@ -309,11 +309,11 @@ public:
       if (cfg.PerfectTLB) {
         PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
             *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-            item->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+            item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
             item->theVaddr));
         entry.first = true;
         entry.second = perfectPaddr;
-        if (perfectPaddr == 0xFFFFFFFFFFFFFFFF)
+        if (perfectPaddr == qemuFaultAddress)
           item->setPagefault();
       }
       if (entry.first) {
@@ -321,7 +321,21 @@ public:
 
         // item exists so mark hit
         item->setHit();
-        item->thePaddr = (PhysicalMemoryAddress)(entry.second | (item->theVaddr & ~(PAGEMASK)));
+        if(entry.second == (qemuFaultAddress & PAGEMASK))
+          item->thePaddr = qemuFaultAddress;
+        else
+          item->thePaddr = (PhysicalMemoryAddress)(entry.second | (item->theVaddr & ~(PAGEMASK)));
+
+        PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
+            *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
+            item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+            item->theVaddr));
+        // DBG_Assert(item->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << item->theVaddr << ", PA:" << item->thePaddr << ", PerfectPaddr:" << perfectPaddr));
+        if(item->thePaddr != perfectPaddr){
+          DBG_(Dev, (<< "Translation mismatch. Correcting address forcefully. VA:" << item->theVaddr << ", PA:" << item->thePaddr << ", PerfectPaddr:" << perfectPaddr));
+          item->thePaddr = perfectPaddr;
+          (item->isInstr() ? theInstrTLB : theDataTLB)[(VirtualMemoryAddress)(item->theVaddr)] = (PhysicalMemoryAddress)(item->thePaddr);
+        }
 
         if (item->isInstr())
           FLEXUS_CHANNEL(iTranslationReply) << item;
@@ -340,7 +354,7 @@ public:
           } else {
             PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
                 *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-                item->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+                item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
                 item->theVaddr));
             item->setHit();
             item->thePaddr = perfectPaddr;
@@ -385,8 +399,15 @@ public:
         DBG_Assert(item->isInstr() != item->isData());
         DBG_(Iface, (<< "Item is " << (item->isInstr() ? "Instruction" : "Data") << " entry "
                      << item->theVaddr));
-        (item->isInstr() ? theInstrTLB : theDataTLB)[(VirtualMemoryAddress)(item->theVaddr)] =
-            (PhysicalMemoryAddress)(item->thePaddr);
+        if (!item->isPagefault()) {
+          (item->isInstr() ? theInstrTLB : theDataTLB)[(VirtualMemoryAddress)(item->theVaddr)] =
+              (PhysicalMemoryAddress)(item->thePaddr);
+        }
+        PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
+            *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
+            item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+            item->theVaddr));
+        DBG_Assert(item->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << item->theVaddr << ", PA:" << item->thePaddr << ", PerfectPaddr:" << perfectPaddr));
         if (item->isInstr())
           FLEXUS_CHANNEL(iTranslationReply) << item;
         else
@@ -520,6 +541,11 @@ public:
   }
 
   void sendTLBresponse(TranslationPtr aTranslation) {
+    PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
+        *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
+        aTranslation->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+        aTranslation->theVaddr));
+    DBG_Assert(aTranslation->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << aTranslation->theVaddr << ", PA:" << aTranslation->thePaddr << ", PerfectPaddr:" << perfectPaddr));
     if (aTranslation->isInstr()) {
       FLEXUS_CHANNEL(iTranslationReply) << aTranslation;
     } else {
@@ -532,10 +558,14 @@ public:
   }
 
   void push(interface::TLBReqIn const &, index_t anIndex, TranslationPtr &aTranslate) {
-    TLB tlb = aTranslate->isInstr() ? theInstrTLB : theDataTLB;
-    bool hit = tlb.lookUp(aTranslate->theVaddr).first;
-    if (!cfg.PerfectTLB && !hit) {
-
+    PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
+        *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
+        aTranslate->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+        aTranslate->theVaddr));
+    DBG_Assert(aTranslate->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << aTranslate->theVaddr << ", PA:" << aTranslate->thePaddr << ", PerfectPaddr:" << perfectPaddr));
+    if (!cfg.PerfectTLB &&
+        (aTranslate->isInstr() ? theInstrTLB : theDataTLB).lookUp(aTranslate->theVaddr).first ==
+            false) {
       if (!theMMUInitialized) {
         theMMU.reset(new mmu_t());
         theMMU->initRegsFromQEMUObject(getMMURegsFromQEMU((int)flexusIndex()));
@@ -546,10 +576,10 @@ public:
         thePageWalker->setMMU(theMMU);
         theMMUInitialized = true;
       }
-      thePageWalker->push_back_trace(aTranslate,
-                                     Flexus::Qemu::Processor::getProcessor((int)flexusIndex()));
       (aTranslate->isInstr() ? theInstrTLB : theDataTLB)[aTranslate->theVaddr] =
           aTranslate->thePaddr;
+      thePageWalker->push_back_trace(aTranslate,
+                                     Flexus::Qemu::Processor::getProcessor((int)flexusIndex()));
     }
   }
 };
