@@ -572,6 +572,7 @@ public:
       return false;
     }
     if (theConsistencyModel == kRMO) {
+      return theSBCount >= theSBSize;
       return theSBLines_Permission_falsecount >= theSBSize;
     } else {
       return (theSBCount >= theSBSize ||

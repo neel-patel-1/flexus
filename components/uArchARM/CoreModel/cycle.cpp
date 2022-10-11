@@ -1239,9 +1239,9 @@ void CoreImpl::retire() {
     theSpinRetireSinceReset++;
 
     CORE_DBG(theName << " Retire:" << *theROB.front());
-    if (!acceptInterrupt()) {
-      theROB.front()->checkTraps(); // take traps only if we don't take interrupt
-    }
+    // if (!acceptInterrupt()) {
+    //   theROB.front()->checkTraps(); // take traps only if we don't take interrupt
+    // }
     if (thePendingTrap != kException_None) {
       theROB.front()->changeInstCode(codeException);
       DBG_(Verb, (<< theName << " Trap raised by " << *theROB.front()));

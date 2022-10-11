@@ -571,45 +571,80 @@ bool CoreImpl::scanAndBlockPrefetch(memq_t::index<by_insn>::type::iterator anLSQ
 
 void CoreImpl::issueStore() {
   FLEXUS_PROFILE();
-  if ((!theMemQueue.empty()) && (theMemQueue.front().theQueue == kSB) &&
-      theMemQueue.front().status() == kAwaitingIssue && !theMemQueue.front().isAbnormalAccess()) {
-    if (theConsistencyModel == kRMO && !theMemQueue.front().isAtomic() &&
-        theMemQueue.front().thePaddr && !theMemQueue.front().theNonCacheable) {
-      PhysicalMemoryAddress aligned = PhysicalMemoryAddress(
-          static_cast<uint64_t>(theMemQueue.front().thePaddr) & ~(theCoherenceUnit - 1));
-      if (theSBLines_Permission.find(aligned) != theSBLines_Permission.end()) {
-        if (theSBLines_Permission[aligned].second) {
+  if (theConsistencyModel == kRMO) {
+    memq_t::iterator iter, iter2, end;
+    for (iter = theMemQueue.begin(), end = theMemQueue.end(); iter != end, iter->theQueue == kSB;
+         ++iter) {
+      if (iter->status() == kAwaitingIssue && !iter->isAbnormalAccess()
+          && !iter->isAtomic() && iter->thePaddr && !iter->theNonCacheable) {
+        PhysicalMemoryAddress aligned =
+            PhysicalMemoryAddress(static_cast<uint64_t>(iter->thePaddr) & ~(theCoherenceUnit - 1));
+        if (theSBLines_Permission.find(aligned) != theSBLines_Permission.end() &&
+            theSBLines_Permission[aligned].second) {
           // Short circuit the store because we already have permission on chip
-          DBG_(Verb, (<< theName << " short-circuit store: " << theMemQueue.front()));
+          DBG_(Verb, (<< theName << " short-circuit store: " << *iter));
           MemOp op;
           op.theOperation = kStoreReply;
-          op.theVAddr = theMemQueue.front().theVaddr;
-          op.theSideEffect = theMemQueue.front().theSideEffect;
-          op.theReverseEndian = theMemQueue.front().theInverseEndian;
-          op.theNonCacheable = theMemQueue.front().theNonCacheable;
-          op.thePAddr = theMemQueue.front().thePaddr;
-          op.theSize = theMemQueue.front().theSize;
-          op.thePC = theMemQueue.front().theInstruction->pc();
-          if (theMemQueue.front().theValue) {
-            op.theValue = *theMemQueue.front().theValue;
+          op.theVAddr = iter->theVaddr;
+          op.theSideEffect = iter->theSideEffect;
+          op.theReverseEndian = iter->theInverseEndian;
+          op.theNonCacheable = iter->theNonCacheable;
+          op.thePAddr = iter->thePaddr;
+          op.theSize = iter->theSize;
+          op.thePC = iter->theInstruction->pc();
+          if (iter->theValue) {
+            op.theValue = *iter->theValue;
           } else {
             op.theValue = 0;
           }
-          theMemQueue.front().theIssued = true;
+          iter->theIssued = true;
           // Need to inform ValueTracker that this store is complete
           bits value = op.theValue;
-          //          if (op.theReverseEndian) {
-          //            value = bits(Flexus::Qemu::endianFlip(value.to_ulong(),
-          //            op.theSize)); DBG_(Verb, ( << "Performing inverse endian
-          //            store for addr " << std::hex << op.thePAddr << " val: "
-          //            << op.theValue << " inv: " << value << std::dec ));
-          //          }
           ValueTracker::valueTracker(theNode).commitStore(theNode, op.thePAddr, op.theSize, value);
-          completeLSQ(theMemQueue.project<by_insn>(theMemQueue.begin()), op);
-          return;
+          completeLSQ(theMemQueue.project<by_insn>(iter), op);
+          iter = theMemQueue.begin();
+          iter--; 
         }
       }
     }
+    for (iter = theMemQueue.begin(), end = theMemQueue.end(); iter != end, iter->theQueue == kSB;
+         ++iter) {
+      for (iter2 = iter, ++iter2, end = theMemQueue.end(); iter2 != end, iter2->theQueue == kSB;
+          ++iter2) {
+        if (iter->status() == kAwaitingIssue && !iter->isAbnormalAccess()
+            && !iter->isAtomic() && iter->thePaddr && !iter->theNonCacheable
+            && iter2->status() == kAwaitingIssue && !iter2->isAbnormalAccess()
+            && !iter2->isAtomic() && iter2->thePaddr && !iter2->theNonCacheable
+            && iter->thePaddr == iter2->thePaddr && iter->theSize == iter2->theSize) {
+            // Remove the older store because we have complete overlap
+            DBG_(Verb, (<< theName << " coalesce store: " << *iter << ", and " << *iter2));
+            MemOp op;
+            op.theOperation = kStoreReply;
+            op.theVAddr = iter->theVaddr;
+            op.theSideEffect = iter->theSideEffect;
+            op.theReverseEndian = iter->theInverseEndian;
+            op.theNonCacheable = iter->theNonCacheable;
+            op.thePAddr = iter->thePaddr;
+            op.theSize = iter->theSize;
+            op.thePC = iter->theInstruction->pc();
+            if (iter->theValue) {
+              op.theValue = *iter->theValue;
+            } else {
+              op.theValue = 0;
+            }
+            iter->theIssued = true;
+            // Need to inform ValueTracker that this store is complete
+            bits value = op.theValue;
+            ValueTracker::valueTracker(theNode).commitStore(theNode, op.thePAddr, op.theSize, value);
+            completeLSQ(theMemQueue.project<by_insn>(iter), op);
+            iter = theMemQueue.begin();
+            iter2 = iter;
+        }
+      }
+    }
+  }
+  if ((!theMemQueue.empty()) && (theMemQueue.front().theQueue == kSB) &&
+      theMemQueue.front().status() == kAwaitingIssue && !theMemQueue.front().isAbnormalAccess()) {
     DBG_Assert(theMemQueue.front().thePaddr != kInvalid,
                (<< "Abnormal stores should not get to issueStore: " << theMemQueue.front()));
     DBG_(Verb, (<< theName << " Port request from here: "
