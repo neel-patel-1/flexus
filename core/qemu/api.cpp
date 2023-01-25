@@ -47,7 +47,6 @@ namespace Qemu {
 namespace API {
 #include "api.h"
 
-QEMU_GET_PHYS_MEMORY_PROC QEMU_get_phys_memory = nullptr;
 QEMU_GET_ETHERNET_PROC QEMU_get_ethernet = nullptr;
 QEMU_CLEAR_EXCEPTION_PROC QEMU_clear_exception = nullptr;
 QEMU_GET_PENDING_INTERRUPT_PROC QEMU_get_pending_interrupt = nullptr;
@@ -70,7 +69,6 @@ QEMU_GET_PHYS_MEM_PROC QEMU_get_phys_mem = nullptr;
 QEMU_GET_CPU_BY_INDEX_PROC QEMU_get_cpu_by_index = nullptr;
 QEMU_GET_CPU_INDEX_PROC QEMU_get_cpu_index = nullptr;
 QEMU_STEP_COUNT_PROC QEMU_step_count = nullptr;
-QEMU_GET_NUM_CPUS_PROC QEMU_get_num_cpus = nullptr;
 QEMU_GET_NUM_SOCKETS_PROC QEMU_get_num_sockets = nullptr;
 QEMU_GET_NUM_CORES_PROC QEMU_get_num_cores = nullptr;
 QEMU_GET_NUM_THREADS_PER_CORE_PROC QEMU_get_num_threads_per_core = nullptr;
@@ -79,10 +77,9 @@ QEMU_SET_TICK_FREQUENCY_PROC QEMU_set_tick_frequency = nullptr;
 QEMU_GET_TICK_FREQUENCY_PROC QEMU_get_tick_frequency = nullptr;
 QEMU_GET_PROGRAM_COUNTER_PROC QEMU_get_program_counter = nullptr;
 QEMU_LOGICAL_TO_PHYSICAL_PROC QEMU_logical_to_physical = nullptr;
-QEMU_BREAK_SIMULATION_PROC QEMU_break_simulation = nullptr;
+QEMU_BREAK_SIMULATION_PROC QEMU_quit_simulation = nullptr;
 QEMU_IS_STOPPED_PROC QEMU_is_stopped = nullptr;
-QEMU_SET_SIMULATION_TIME_PROC QEMU_setSimulationTime = nullptr;
-QEMU_GET_SIMULATION_TIME_PROC QEMU_getSimulationTime = nullptr;
+QEMU_GET_SIMULATION_TIME_PROC QEMU_getCyclesLeft = nullptr;
 QEMU_MEM_OP_IS_DATA_PROC QEMU_mem_op_is_data = nullptr;
 QEMU_MEM_OP_IS_WRITE_PROC QEMU_mem_op_is_write = nullptr;
 QEMU_MEM_OP_IS_READ_PROC QEMU_mem_op_is_read = nullptr;
@@ -102,7 +99,6 @@ QEMU_DUMP_STATE_PROC QEMU_dump_state = nullptr;
 // QEMU_GET_MMU_STATE_PROC QEMU_get_mmu_state= nullptr;
 
 void QFLEX_API_set_Interface_Hooks(const QFLEX_API_Interface_Hooks_t *hooks) {
-  QEMU_get_phys_memory = hooks->QEMU_get_phys_memory;
   QEMU_get_ethernet = hooks->QEMU_get_ethernet;
   QEMU_clear_exception = hooks->QEMU_clear_exception;
   QEMU_write_register = hooks->QEMU_write_register;
@@ -123,7 +119,6 @@ void QFLEX_API_set_Interface_Hooks(const QFLEX_API_Interface_Hooks_t *hooks) {
   QEMU_get_cpu_by_index = hooks->QEMU_get_cpu_by_index;
   QEMU_get_cpu_index = hooks->QEMU_get_cpu_index;
   QEMU_step_count = hooks->QEMU_step_count;
-  QEMU_get_num_cpus = hooks->QEMU_get_num_cpus;
   QEMU_get_num_sockets = hooks->QEMU_get_num_sockets;
   QEMU_get_num_cores = hooks->QEMU_get_num_cores;
   QEMU_get_num_threads_per_core = hooks->QEMU_get_num_threads_per_core;
@@ -132,9 +127,8 @@ void QFLEX_API_set_Interface_Hooks(const QFLEX_API_Interface_Hooks_t *hooks) {
   QEMU_get_tick_frequency = hooks->QEMU_get_tick_frequency;
   QEMU_get_program_counter = hooks->QEMU_get_program_counter;
   QEMU_logical_to_physical = hooks->QEMU_logical_to_physical;
-  QEMU_break_simulation = hooks->QEMU_break_simulation;
-  QEMU_getSimulationTime = hooks->QEMU_getSimulationTime;
-  QEMU_setSimulationTime = hooks->QEMU_setSimulationTime;
+  QEMU_quit_simulation = hooks->QEMU_quit_simulation;
+  QEMU_getCyclesLeft = hooks->QEMU_getCyclesLeft;
   QEMU_mem_op_is_data = hooks->QEMU_mem_op_is_data;
   QEMU_mem_op_is_write = hooks->QEMU_mem_op_is_write;
   QEMU_mem_op_is_read = hooks->QEMU_mem_op_is_read;

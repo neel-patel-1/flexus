@@ -47,6 +47,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <core/debug/debug.hpp>
 
@@ -55,176 +56,30 @@
 #include <core/configuration.hpp>
 #include <core/simulator_name.hpp>
 #include <core/target.hpp>
+#include <core/flexus.hpp>
 
 #define QEMUFLEX_FLEXUS_INTERNAL
-namespace Flexus {
-namespace Qemu {
-namespace API {
-#include <core/qemu/api.h>
-} // namespace API
-} // namespace Qemu
-} // namespace Flexus
-
-#include <fstream>
-
-// For debug purposes
-#include <iostream>
-
-namespace Flexus {
-
-namespace Core {
-void Break() {
-  // QEMU: halt simulation and print message
-}
-void CreateFlexusObject();
-void PrepareFlexusObject();
-void initFlexus();
-void deinitFlexus();
-void callQMP(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *args);
-void setCfg(const char *aFile);
-void startTimingFlexus();
-} // namespace Core
-
-namespace Qemu {
-
-using namespace Flexus::Core;
-namespace Qemu = Flexus::Qemu;
-
-void CreateFlexus() {
-  CreateFlexusObject();
-
-  Flexus::Core::index_t system_width;
-  std::ifstream ifs("preload_system_width");
-
-  if (!ifs.good()) {
-    DBG_(Crit, (<< "Warning! Components instantiation failed due "
-                   "to the system width is not defined!"
-                << " Defaulting to 1 cpu"));
-    system_width = 1;
-    exit(1);
-  } else {
-    ifs >> system_width;
-  }
-  ifs.close();
-
-  DBG_(Crit, (<< "Instantiating Flexus components with SystemWidth = " << system_width));
-
-  Flexus::Core::ComponentManager::getComponentManager().instantiateComponents(system_width);
-  ConfigurationManager::getConfigurationManager().processCommandLineConfiguration(0, 0);
-}
-
-void PrepareFlexus() {
-  PrepareFlexusObject();
-  Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_config_ready, nullptr,
-                                  (void *)&CreateFlexus);
-}
+#include <core/qemu/api_wrappers.hpp>
 
 extern "C" void qmp_call(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
-  callQMP(aCMD, anArgs);
-}
-extern "C" void set_config(const char *aFile) {
-  setCfg(aFile);
-}
-extern "C" void flexus_init(void) {
-  initFlexus();
-}
-
-extern "C" void flexus_deinit(void) {
-  deinitFlexus();
-}
-
-extern "C" void start_timing_sim(void) {
-  startTimingFlexus();
-}
-} // namespace Qemu
-} // end namespace Flexus
-
-namespace {
-
-using std::cerr;
-using std::endl;
-
-// clang-format off
-void print_copyright() {
-
-  cerr << "////////////////////////////////////////////////////////////////////////////////////////////////////////" << endl;
-  cerr << "//                                                                                                    //" << endl;
-  cerr << "//           ************                                                                             //" << endl;
-  cerr << "//          **************                                                                            //" << endl;
-  cerr << "//   *      **************      *                                                                     //" << endl;
-  cerr << "//  **      ***  ****  ***     ***                                                                    //" << endl;
-  cerr << "// ***      **************      ***                                                                   //" << endl;
-  cerr << "// ****     **************     ****                                                                   //" << endl;
-  cerr << "//  ******************************   ***********    *                                                 //" << endl;
-  cerr << "//    *********        **********   *************  ***                                                //" << endl;
-  cerr << "//      *****            *****      ***            ***       *****      *        *                    //" << endl;
-  cerr << "//      ****              ****      ***            ***    ***********  ****    ****                   //" << endl;
-  cerr << "//      ****               ***      **********     ***   ****     ****   ********                     //" << endl;
-  cerr << "//      ****          *** ****      **********     ***   *************     ****                       //" << endl;
-  cerr << "//       ****          ******       ***            ***   ***             ********                     //" << endl;
-  cerr << "//        *****        *******      ***            ***    ****   ****   ****  ****                    //" << endl;
-  cerr << "//           ****    ****   ***     ***            ***      ********   ***      ***                   //" << endl;
-  cerr << "//                                                                                                    //" << endl; 
-  cerr << "//   QFlex (C) 2016-2020, Parallel Systems Architecture Lab, EPFL                                     //" << endl;
-  cerr << "//   All rights reserved.                                                                             //" << endl;
-  cerr << "//   Website: https://qflex.epfl.ch                                                                   //" << endl;
-  cerr << "//   QFlex uses software developed externally:                                                        //" << endl;
-  cerr << "//   [NS-3](https://www.gnu.org/copyleft/gpl.html)                                                    //" << endl;
-  cerr << "//   [QEMU](http://wiki.qemu.org/License)                                                             //" << endl;
-  cerr << "//   [SimFlex] (http://parsa.epfl.ch/simflex/)                                                        //" << endl;
-  cerr << "//                                                                                                    //" << endl; 
-  cerr << "//   Redistribution and use in source and binary forms, with or without modification,                 //" << endl;
-  cerr << "//   are permitted provided that the following conditions are met:                                    //" << endl;
-  cerr << "//                                                                                                    //" << endl;
-  cerr << "//       * Redistributions of source code must retain the above copyright notice,                     //" << endl;
-  cerr << "//         this list of conditions and the following disclaimer.                                      //" << endl;
-  cerr << "//       * Redistributions in binary form must reproduce the above copyright notice,                  //" << endl;
-  cerr << "//         this list of conditions and the following disclaimer in the documentation                  //" << endl;
-  cerr << "//         and/or other materials provided with the distribution.                                     //" << endl;
-  cerr << "//       * Neither the name of the Parallel Systems Architecture Laboratory, EPFL,                    //" << endl;
-  cerr << "//         nor the names of its contributors may be used to endorse or promote                        //" << endl;
-  cerr << "//         products derived from this software without specific prior written                         //" << endl;
-  cerr << "//         permission.                                                                                //" << endl;
-  cerr << "//                                                                                                    //" << endl;
-  cerr << "//   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND                  //" << endl;
-  cerr << "//   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED                    //" << endl;
-  cerr << "//   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE                           //" << endl;
-  cerr << "//   DISCLAIMED. IN NO EVENT SHALL THE PARALLEL SYSTEMS ARCHITECTURE LABORATORY,                      //" << endl;
-  cerr << "//   EPFL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR                      //" << endl;
-  cerr << "//   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE                  //" << endl;
-  cerr << "//   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)                      //" << endl;
-  cerr << "//   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT                       //" << endl;
-  cerr << "//   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF                 //" << endl;
-  cerr << "//   THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     //" << endl;
-  cerr << "////////////////////////////////////////////////////////////////////////////////////////////////////////" << endl << endl << endl;;
-  cerr << "//   QFlex simulator - Built as " << Flexus::theSimulatorName << endl << endl;
-}
-// clang-format on
-
-extern "C" void qmpcall(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
-  Flexus::Qemu::qmp_call(aCMD, anArgs);
-}
-extern "C" void setConfig(const char *aFile) {
-  Flexus::Qemu::set_config(aFile);
-}
-
-} // namespace
-extern "C" void flexInit() {
-  Flexus::Qemu::flexus_init();
+  Flexus::Core::callQMP(aCMD, anArgs);
 }
 
 extern "C" void flexDeinit() {
-  Flexus::Qemu::flexus_deinit();
+  Flexus::Core::deinitFlexus();
 }
 
 extern "C" void startTiming() {
-  Flexus::Qemu::start_timing_sim();
+  Flexus::Core::startTimingFlexus(); 
 }
 
-extern "C" void qflex_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks) {
-  Flexus::Qemu::API::QFLEX_API_set_Interface_Hooks(hooks);
-
+// Hooked with `dlsym` in `flexus_proxy.c`
+static void print_copyright(void);
+extern "C" void qflex_sim_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks, int nb_cores, const char *config_file) {
   print_copyright();
+
+  QFLEX_API_set_Interface_Hooks(hooks);
+  Flexus::Core::setCfg(config_file);
 
   if (getenv("WAITFORSIGCONT")) {
     std::cerr << "Waiting for SIGCONT..." << std::endl;
@@ -238,7 +93,19 @@ extern "C" void qflex_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks
              << BOOST_VERSION / 100 % 1000 << "." << BOOST_VERSION % 100));
 
   // Do all the stuff we need to get Simics to know we are here
-  Flexus::Qemu::PrepareFlexus();
+  Flexus::Core::PrepareFlexusObject();
+  Flexus::Core::CreateFlexusObject();
+
+  Flexus::Core::index_t system_width = nb_cores;
+
+  DBG_(Crit, (<< "Instantiating Flexus components with SystemWidth = " << system_width));
+
+  Flexus::Core::ComponentManager::getComponentManager().instantiateComponents(system_width);
+  Flexus::Core::ConfigurationManager::getConfigurationManager().processCommandLineConfiguration(0, 0);
+
+  DBG_(Iface, (<< "Flexus Configured."));
+
+  Flexus::Core::initFlexus();
 
   DBG_(Iface, (<< "Flexus Initialized."));
 }
@@ -246,3 +113,60 @@ extern "C" void qflex_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks
 extern "C" void qflex_quit(void) {
   flexDeinit();
 }
+
+// clang-format off
+static void print_copyright(void) {
+  std::cerr << ""
+  "######################################################################################################\n"
+  "#                                                                                                    #\n"
+  "#           ************                                                                             #\n"
+  "#          **************                                                                            #\n"
+  "#   *      **************      *                                                                     #\n"
+  "#  **      ***  ****  ***     ***                                                                    #\n"
+  "# ***      **************      ***                                                                   #\n"
+  "# ****     **************     ****                                                                   #\n"
+  "#  ******************************   ***********    *                                                 #\n"
+  "#    *********        **********   *************  ***                                                #\n"
+  "#      *****            *****      ***            ***       *****      *        *                    #\n"
+  "#      ****              ****      ***            ***    ***********  ****    ****                   #\n"
+  "#      ****               ***      **********     ***   ****     ****   ********                     #\n"
+  "#      ****          *** ****      **********     ***   *************     ****                       #\n"
+  "#       ****          ******       ***            ***   ***             ********                     #\n"
+  "#        *****        *******      ***            ***    ****   ****   ****  ****                    #\n"
+  "#           ****    ****   ***     ***            ***      ********   ***      ***                   #\n"
+  "#                                                                                                    #\n"
+  "#   QFlex (C) 2016-2020, Parallel Systems Architecture Lab, EPFL                                     #\n"
+  "#   All rights reserved.                                                                             #\n"
+  "#   Website: https://qflex.epfl.ch                                                                   #\n"
+  "#   QFlex uses software developed externally:                                                        #\n"
+  "#   [NS-3](https://www.gnu.org/copyleft/gpl.html)                                                    #\n"
+  "#   [QEMU](http://wiki.qemu.org/License)                                                             #\n"
+  "#   [SimFlex] (http://parsa.epfl.ch/simflex/)                                                        #\n"
+  "#                                                                                                    #\n"
+  "#   Redistribution and use in source and binary forms, with or without modification,                 #\n"
+  "#   are permitted provided that the following conditions are met:                                    #\n"
+  "#                                                                                                    #\n"
+  "#       * Redistributions of source code must retain the above copyright notice,                     #\n"
+  "#         this list of conditions and the following disclaimer.                                      #\n"
+  "#       * Redistributions in binary form must reproduce the above copyright notice,                  #\n"
+  "#         this list of conditions and the following disclaimer in the documentation                  #\n"
+  "#         and/or other materials provided with the distribution.                                     #\n"
+  "#       * Neither the name of the Parallel Systems Architecture Laboratory, EPFL,                    #\n"
+  "#         nor the names of its contributors may be used to endorse or promote                        #\n"
+  "#         products derived from this software without specific prior written                         #\n"
+  "#         permission.                                                                                #\n"
+  "#                                                                                                    #\n"
+  "#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND                  #\n"
+  "#   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED                    #\n"
+  "#   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE                           #\n"
+  "#   DISCLAIMED. IN NO EVENT SHALL THE PARALLEL SYSTEMS ARCHITECTURE LABORATORY,                      #\n"
+  "#   EPFL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR                      #\n"
+  "#   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE                  #\n"
+  "#   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)                      #\n"
+  "#   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT                       #\n"
+  "#   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF                 #\n"
+  "#   THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     #\n"
+  "######################################################################################################\n" << std::endl << std::endl;
+  std::cerr << " QFlex simulator - Built as " << Flexus::theSimulatorName << std::endl << std::endl;
+}
+// clang-format on

@@ -306,8 +306,8 @@ public:
     return API::QEMU_get_current_el(*this);
   }
 
-  void breakSimulation() {
-    API::QEMU_break_simulation("");
+  void quitSimulation() {
+    API::QEMU_quit_simulation("Flexus quit simulatiom");
   }
 
   int advance(bool count_time = true) {

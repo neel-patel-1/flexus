@@ -286,7 +286,7 @@ void FlexusImpl::advanceCycles(int64_t aCycleCount) {
 #ifndef CONFIG_QEMU
       Simics::BreakSimulation("Flexus is quiesced.");
 #else
-      Qemu::API::QEMU_break_simulation("Flexus is quiesced.");
+      Qemu::API::QEMU_quit_simulation("ERROR: Flexus does not support pause, quitting instead.");
 #endif
       return;
     }
@@ -377,7 +377,6 @@ void FlexusImpl::watchdogCheck() {
     // We get 10k cycles of Iface trace after a watchdog timeout before we
     // assert and kill Flexus
     if (!(theWatchdogCounts[i] < (uint32_t)(0.8 * theWatchdogTimeout))) {
-      //  if (!( theWatchdogCounts[i] < 90000)) {
 
       if (!theWatchdogWarning) {
         theWatchdogWarning = true;
@@ -768,7 +767,7 @@ void FlexusImpl::terminateSimulation() {
 #ifndef CONFIG_QEMU
   Flexus::Simics::BreakSimulation("Simulation terminated by flexus.");
 #else
-  Flexus::Qemu::API::QEMU_break_simulation("Simulation terminated by flexus.");
+  Flexus::Qemu::API::QEMU_quit_simulation("Simulation terminated by flexus.");
 #endif
 }
 
@@ -957,6 +956,8 @@ Flexus_Obj theFlexusObj;
 FlexusFactory *theFlexusFactory;
 FlexusInterface *theFlexus = 0; // This is initialized from startup.cpp
 
+
+
 void CreateFlexusObject() {
   theFlexusObj = Core::theFlexusFactory->create("flexus");
   theFlexus = &Core::theFlexusObj;
@@ -968,6 +969,7 @@ void CreateFlexusObject() {
 void setCfg(const char *aFile) {
   config_file = aFile;
 }
+
 void callQMP(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
 
   try {
@@ -994,7 +996,7 @@ void deinitFlexus() {
     delete theFlexusFactory;
 }
 void startTimingFlexus() {
-  while (Qemu::API::QEMU_getSimulationTime() > 1) {
+  while (Qemu::API::QEMU_getCyclesLeft() > 1) {
     theFlexus->doCycle();
   }
   theFlexus->terminateSimulation();

@@ -47,8 +47,18 @@
 #ifndef FLEXUS_CORE_FLEXUS_HPP__INCLUDED
 #define FLEXUS_CORE_FLEXUS_HPP__INCLUDED
 
+#include <core/qemu/api_wrappers.hpp>
+
 namespace Flexus {
 namespace Core {
+
+void CreateFlexusObject();
+void PrepareFlexusObject();
+void initFlexus();
+void deinitFlexus();
+void callQMP(Qemu::API::qmp_flexus_cmd_t aCMD, const char *args);
+void setCfg(const char *aFile);
+void startTimingFlexus();
 
 class FlexusInterface {
 public:

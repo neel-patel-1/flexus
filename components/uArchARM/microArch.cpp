@@ -379,7 +379,8 @@ public:
                    << "] Resynchronize "
                       "complete\n==================================================="
                       "=====\n"));
-        theCPU->breakSimulation();
+        // QFlex does not support break or pause, quit instead.
+        theCPU->quitSimulation();
       }
       theExceptionRaised = 0;
     }

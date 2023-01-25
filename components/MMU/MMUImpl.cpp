@@ -530,10 +530,12 @@ public:
   bool available(interface::TLBReqIn const &, index_t anIndex) {
     return true;
   }
+
   void push(interface::TLBReqIn const &, index_t anIndex, TranslationPtr &aTranslate) {
-    if (!cfg.PerfectTLB &&
-        (aTranslate->isInstr() ? theInstrTLB : theDataTLB).lookUp(aTranslate->theVaddr).first ==
-            false) {
+    TLB tlb = aTranslate->isInstr() ? theInstrTLB : theDataTLB;
+    bool hit = tlb.lookUp(aTranslate->theVaddr).first;
+    if (!cfg.PerfectTLB && !hit) {
+
       if (!theMMUInitialized) {
         theMMU.reset(new mmu_t());
         theMMU->initRegsFromQEMUObject(getMMURegsFromQEMU((int)flexusIndex()));

@@ -1071,8 +1071,6 @@ public:
 
       return ret;
     }
-
-    theAllocateInProgress = false;
   }
 
   void updateState(RTLookupResult &result, CoherenceState_t new_state, bool make_MRU,

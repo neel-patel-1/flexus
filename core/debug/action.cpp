@@ -69,11 +69,6 @@
 #include <core/debug/debugger.hpp>
 
 namespace Flexus {
-
-namespace Core {
-void Break();
-}
-
 namespace Dbg {
 
 void CompoundAction::printConfiguration(std::ostream &anOstream, std::string const &anIndent) {
@@ -173,7 +168,8 @@ void BreakAction::printConfiguration(std::ostream &anOstream, std::string const 
 }
 
 void BreakAction::process(Entry const &anEntry) {
-  Flexus::Core::Break();
+  // std::abort();
+  //Flexus::Core::Break();
 }
 
 void PrintStatsAction::printConfiguration(std::ostream &anOstream, std::string const &anIndent) {
