@@ -49,7 +49,7 @@
 
 #define DBG_DeclareCategories uArchCat
 #define DBG_SetDefaultOps AddCat(uArchCat)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nuArchARM {
 

@@ -140,4 +140,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(SpatialPrefetcher, nSpatialPrefetcher);
 #define FLEXUS_END_COMPONENT SpatialPrefetcher
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

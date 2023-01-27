@@ -47,4 +47,4 @@
 #include "MultiNicXImpl.hpp"
 
 #define DBG_DefineCategories MultiNic
-#include DBG_Control()
+#include DBG_Control

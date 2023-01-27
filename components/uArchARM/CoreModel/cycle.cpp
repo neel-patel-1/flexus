@@ -60,7 +60,7 @@
 
 #define DBG_DeclareCategories uArchCat
 #define DBG_SetDefaultOps AddCat(uArchCat)
-#include DBG_Control()
+#include DBG_Control
 
 namespace narmDecoder {
 extern uint32_t theInsnCount;

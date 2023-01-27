@@ -51,7 +51,7 @@
 using namespace boost::multi_index;
 
 #define DBG_SetDefaultOps AddCat(SpatialPrefetch)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nGHBPrefetcher {
 
@@ -177,4 +177,4 @@ public:
 } // end namespace nGHBPrefetcher
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

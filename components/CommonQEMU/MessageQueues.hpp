@@ -52,7 +52,7 @@
 
 #define DBG_DeclareCategories CommonQueues
 #define DBG_SetDefaultOps AddCat(CommonQueues)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nMessageQueues {
 
@@ -298,6 +298,6 @@ public:
 } // End Namespace nMessageQueues
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control
 
 #endif // FLEXUS_COMMON_MESSAGE_QUEUES_HPP_INCLUDED

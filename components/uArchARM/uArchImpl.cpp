@@ -61,7 +61,7 @@
 
 #define DBG_DefineCategories uArchCat, Special
 #define DBG_SetDefaultOps AddCat(uArchCat)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nuArchARM {
 
@@ -591,4 +591,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(uArchARM, nuArchARM);
 #define FLEXUS_END_COMPONENT uArchARM
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

@@ -83,7 +83,7 @@ namespace Stat = Flexus::Stat;
 
 #define DBG_DefineCategories BPred
 #define DBG_SetDefaultOps AddCat(BPred)
-#include DBG_Control()
+#include DBG_Control
 
 namespace Flexus {
 namespace SharedTypes {

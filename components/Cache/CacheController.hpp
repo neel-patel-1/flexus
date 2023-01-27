@@ -77,7 +77,7 @@ using namespace boost::multi_index;
 
 #define DBG_DeclareCategories Cache
 #define DBG_SetDefaultOps AddCat(Cache)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nCache {
 
@@ -963,6 +963,6 @@ private:
 } // end namespace nCache
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control
 
 #endif // FLEXUS_CACHE_CONTROLLER_HPP_INCLUDED

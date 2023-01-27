@@ -201,41 +201,41 @@ Compile Time Control of the DBG_ system
 Much of the behavior of debug statements (for example, if they should compile
 away) can be controlled at compile time.  These settings can be changed at
 any point in the code by setting some directives with #define, and then
-#include DBG_Control().  Note tht there are NO SEMICOLONS at the end of the
+#include DBG_Control Note tht there are NO SEMICOLONS at the end of the
 #define or #include directives.
 
   #define DBG_NewCategories category, category, ...
-  #include DBG_Control()
+  #include DBG_Control
     Creates new debug categories.  Categories should be separated by commas.
     This should only be done at global scope (outside of any namespace), or
     the categories will only be visible within that namespace.
     Ex:
       #define DBG_NewCategories MyCat, MyCat2
-      #include DBG_Control()
+      #include DBG_Control
 
   #define DBG_Reset
-  #include DBG_Control()
+  #include DBG_Control
     Clears the default operations set with SetDefaultOps. See DBG_SetDefaultOps
     for more info.
 
   #define DBG_SetAssertions true or false
-  #include DBG_Control()
+  #include DBG_Control
     Enable or disable assertions. This is true by default.
     Ex:
       #define DBG_Assertions true
-      #include DBG_Control()
+      #include DBG_Control
 
   #define DBG_SetCoreDebugging true or false
-  #include DBG_Control()
+  #include DBG_Control
     Enable or disable core debugging.  This needs to be set before the
     Scaffold core is included (ie at the top of wiring). This is false
     by default.
     Ex:
       #define DBG_SetCoreDebugging true
-      #include DBG_Control()
+      #include DBG_Control
 
   #define DBG_SetDefaultOps <operations>
-  #include DBG_Control()
+  #include DBG_Control
     Any debug operations after DBG_SetDefaultOps are automatically appended
     onto the end of every DBG_ and DBG_Assert statement, unless inhibited
     by NoDefaultOps().  These default operations are cleared by DBG_Reset.
@@ -243,18 +243,18 @@ any point in the code by setting some directives with #define, and then
     DBG_SetDefaultOps.
     Ex:
       #define DBG_SetDefaultOps AddCategory(ProtocolEngine)
-      #include DBG_Control()
+      #include DBG_Control
         ...
       #define DBG_Reset
-      #include DBG_Control()
+      #include DBG_Control
 
 
   #define DBG_SetMinimumSeverity <severity>
-  #include DBG_Control()
+  #include DBG_Control
     Set the severity level used for compile-time filtering of debug statements.
     Ex:
       #define DBG_SetMinimumSeverity Dev
-      #include DBG_Control()
+      #include DBG_Control
 
 
 Run Time Configuration

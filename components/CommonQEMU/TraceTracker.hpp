@@ -57,7 +57,7 @@
 
 #include <components/CommonQEMU/Slices/TransactionTracker.hpp>
 
-#include DBG_Control()
+#include DBG_Control
 
 namespace nTraceTracker {
 

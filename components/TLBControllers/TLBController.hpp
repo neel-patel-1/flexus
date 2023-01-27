@@ -57,7 +57,7 @@
 
 #define DBG_DeclareCategories TLBCtrl
 #define DBG_SetDefaultOps AddCat(TLBCtrl)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nTLB {
 
@@ -69,6 +69,6 @@ typedef Flexus::SharedTypes::PhysicalMemoryAddress MemoryAddress;
 } // end namespace nTLB
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control
 
 #endif // FLEXUS_TLB_CONTROLLER_HPP_INCLUDED

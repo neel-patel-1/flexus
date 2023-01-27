@@ -63,7 +63,7 @@
 
 #define DBG_DefineCategories MemoryNetwork
 #define DBG_SetDefaultOps AddCat(MemoryNetwork)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nNetwork {
 
@@ -381,4 +381,4 @@ FLEXUS_PORT_ARRAY_WIDTH(MemoryNetwork, FromNode) {
 #define FLEXUS_END_COMPONENT MemoryNetwork
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

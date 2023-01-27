@@ -70,7 +70,7 @@ namespace Stat = Flexus::Stat;
 #include "microArch.hpp"
 #define DBG_DeclareCategories uArchCat
 #define DBG_SetDefaultOps AddCat(uArchCat)
-#include DBG_Control()
+#include DBG_Control
 #include "../../core/qemu/mai_api.hpp"
 #include <components/armDecoder/armBitManip.hpp>
 

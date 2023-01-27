@@ -70,7 +70,7 @@
 
 #define DBG_DeclareCategories MultiNic
 #define DBG_SetDefaultOps AddCat(MultiNic)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nMultiNic {
 
@@ -266,7 +266,7 @@ BOOST_PP_REPEAT(FLEXUS_MULTI_NIC_NUMPORTS, ToNode_ArrayWidth, _)
 BOOST_PP_REPEAT(FLEXUS_MULTI_NIC_NUMPORTS, FromNode_ArrayWidth, _)
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control
 
 #else // BOOST_PP_IS_ITERATING
 

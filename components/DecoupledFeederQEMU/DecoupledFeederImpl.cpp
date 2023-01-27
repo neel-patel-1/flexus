@@ -55,7 +55,7 @@
 
 #define DBG_DefineCategories Feeder
 #define DBG_SetDefaultOps AddCat(Feeder)
-#include DBG_Control()
+#include DBG_Control
 
 #define FLEXUS_BEGIN_COMPONENT DecoupledFeeder
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
@@ -349,4 +349,4 @@ FLEXUS_PORT_ARRAY_WIDTH(DecoupledFeeder, ToMMU) {
 #define FLEXUS_END_COMPONENT DecoupledFeeder
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

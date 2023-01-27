@@ -55,7 +55,7 @@
 
 #define DBG_DefineCategories CMPCache
 #define DBG_SetDefaultOps AddCat(CMPCache)
-#include DBG_Control()
+#include DBG_Control
 
 #define FLEXUS_BEGIN_COMPONENT CMPCache
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
@@ -238,4 +238,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(CMPCache, nCMPCache);
 #define FLEXUS_END_COMPONENT CMPCache
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

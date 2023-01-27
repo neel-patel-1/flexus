@@ -55,7 +55,7 @@
 
 #define DBG_DefineCategories GlobalHasherCat
 #define DBG_SetDefaultOps AddCat(GlobalHasherCat)
-#include DBG_Control()
+#include DBG_Control
 
 using namespace Flexus;
 using namespace Core;

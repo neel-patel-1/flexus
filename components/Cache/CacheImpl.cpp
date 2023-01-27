@@ -55,9 +55,9 @@
 
 #define DBG_DefineCategories Cache
 #define DBG_SetDefaultOps AddCat(Cache)
-#include DBG_Control()
+#include DBG_Control
 #define DBG_DefineCategories CacheMissTracking
-#include DBG_Control()
+#include DBG_Control
 
 #define FLEXUS_BEGIN_COMPONENT Cache
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
@@ -519,4 +519,4 @@ FLEXUS_PORT_ARRAY_WIDTH(Cache, FrontSideIn_Prefetch) {
 #define FLEXUS_END_COMPONENT Cache
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

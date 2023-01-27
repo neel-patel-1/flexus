@@ -67,7 +67,7 @@ namespace ll = boost::lambda;
 
 #define DBG_DeclareCategories armDecoder
 #define DBG_SetDefaultOps AddCat(armDecoder)
-#include DBG_Control()
+#include DBG_Control
 
 namespace narmDecoder {
 

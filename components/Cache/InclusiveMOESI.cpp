@@ -86,7 +86,7 @@ using namespace Flexus;
 
 #define DBG_DeclareCategories Cache
 #define DBG_SetDefaultOps AddCat(Cache) Set((CompName) << theName) Set((CompIdx) << theNodeId)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nCache {
 

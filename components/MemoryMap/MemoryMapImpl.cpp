@@ -50,7 +50,7 @@
 
 #define DBG_DefineCategories MemMap
 #define DBG_SetDefaultOps AddCat(MemMap)
-#include DBG_Control()
+#include DBG_Control
 
 #include <fstream>
 #include <iomanip>
@@ -460,4 +460,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(MemoryMap, nMemoryMap);
 #define FLEXUS_END_COMPONENT MemoryMap
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

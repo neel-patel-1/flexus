@@ -57,7 +57,7 @@
 using namespace boost::multi_index;
 
 #define DBG_DeclareCategories CMPCacheMissTracking
-#include DBG_Control()
+#include DBG_Control
 
 #ifdef FLEXUS_TRACK_COHMISSES
 Flexus::Stat::StatInstanceCounter<int64_t> theCoherenceMisses_User("sys-CoherenceMisses:User");

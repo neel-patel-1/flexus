@@ -47,7 +47,7 @@
 
 #define DBG_DefineCategories TraceTrack
 #define DBG_SetDefaultOps AddCat(TraceTrack)
-#include DBG_Control()
+#include DBG_Control
 
 using namespace Flexus;
 using namespace Core;

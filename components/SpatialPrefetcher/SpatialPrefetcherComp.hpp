@@ -65,7 +65,7 @@ using namespace boost::multi_index;
 
 #define DBG_DefineCategories SpatialPrefetch
 #define DBG_SetDefaultOps AddCat(SpatialPrefetch)
-#include DBG_Control()
+#include DBG_Control
 
 /**** Repet Types ****
  0  PC
@@ -3888,4 +3888,4 @@ private:
 } // end namespace nSpatialPrefetcher
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

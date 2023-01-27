@@ -361,5 +361,6 @@ FLEXUS_COMPONENT_INSTANTIATOR(MagicBreak, nMagicBreak);
 #include FLEXUS_END_COMPONENT_IMPLEMENTATION()
 #define FLEXUS_END_COMPONENT MagicBreak
 
+
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

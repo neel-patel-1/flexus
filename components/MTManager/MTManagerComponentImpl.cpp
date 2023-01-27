@@ -47,7 +47,7 @@
 
 #define DBG_DefineCategories MTMgr
 #define DBG_SetDefaultOps AddCat(MTMgr)
-#include DBG_Control()
+#include DBG_Control
 
 #include <core/flexus.hpp>
 #include <core/stats.hpp>
@@ -301,4 +301,4 @@ FLEXUS_PORT_ARRAY_WIDTH(MTManagerComponent, ROB_ICount) {
 #define FLEXUS_END_COMPONENT MTManagerComponent
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

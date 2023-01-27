@@ -48,7 +48,7 @@
 
 #define DBG_DeclareCategories MMU
 #define DBG_SetDefaultOps AddCat(MMU)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nMMU {
 using namespace Flexus::Qemu::API;

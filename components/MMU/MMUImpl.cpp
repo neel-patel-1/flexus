@@ -74,9 +74,9 @@
 
 #define DBG_DefineCategories MMU
 #define DBG_SetDefaultOps AddCat(MMU)
-#include DBG_Control()
+#include DBG_Control
 #define DBG_DefineCategories TLBMissTracking
-#include DBG_Control()
+#include DBG_Control
 
 #define FLEXUS_BEGIN_COMPONENT MMU
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
@@ -585,4 +585,4 @@ FLEXUS_PORT_ARRAY_WIDTH(MMU, TLBReqIn) {
 #define FLEXUS_END_COMPONENT MMU
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

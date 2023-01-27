@@ -212,7 +212,7 @@ struct MemoryLoopbackJumpTable
 
 #define DBG_DefineCategories Memory
 #define DBG_SetDefaultOps AddCat(Memory)
-#include DBG_Control()
+#include DBG_Control
 
 #include <components/CommonQEMU/MemoryMap.hpp>
 #include <components/CommonQEMU/Slices/ExecuteState.hpp>

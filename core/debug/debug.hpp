@@ -57,7 +57,7 @@
 #include <core/debug/aux_/process.hpp>
 #include <core/debug/aux_/state.hpp>
 
-#define DBG_Control() <core/debug/control.hpp>
+#define DBG_Control <core/debug/control.hpp>
 
 #define DBG_(Sev, operations)                                                                      \
   BOOST_PP_CAT(DBG__Undefined_Severity_Level__, Sev)                                               \
@@ -134,7 +134,7 @@ extern bool Stats_debug_enabled;
 #endif
 #define DBG_SetCoreDebugging true
 #define DBG_SetAssertions true
-#include DBG_Control()
+#include DBG_Control
 
 #define RESET "\e[0m"
 #define BLACK "\e[1;30m"

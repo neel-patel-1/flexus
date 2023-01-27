@@ -61,7 +61,7 @@
 #define DBG_DefineCategories                                                                       \
   MagicBreak, IterationCount, Termination, IterationTrace, DBTransactionTrace, SimPrint
 #define DBG_SetDefaultOps AddCat(MagicBreak)
-#include DBG_Control()
+#include DBG_Control
 
 using namespace Flexus;
 using namespace Flexus::Core;

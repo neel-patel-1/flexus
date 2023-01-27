@@ -46,7 +46,7 @@
 
 #define DBG_DeclareCategories TraceTrack
 #define DBG_SetDefaultOps AddCat(TraceTrack)
-#include DBG_Control()
+#include DBG_Control
 
 #include <core/performance/profile.hpp>
 #include <core/stats.hpp>
@@ -88,4 +88,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(TraceTrackerComponent, nTraceTrackerComponent);
 #define FLEXUS_END_COMPONENT TraceTrackerComponent
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

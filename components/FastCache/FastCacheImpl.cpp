@@ -75,7 +75,7 @@
 
 #define DBG_DefineCategories RTCacheCat
 #define DBG_SetDefaultOps AddCat(RTCacheCat) Comp(*this)
-#include DBG_Control()
+#include DBG_Control
 
 #define FLEXUS_BEGIN_COMPONENT FastCache
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
@@ -488,4 +488,4 @@ FLEXUS_PORT_ARRAY_WIDTH(FastCache, SnoopOutI) {
 #define FLEXUS_END_COMPONENT FastCache
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

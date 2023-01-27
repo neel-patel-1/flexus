@@ -51,7 +51,7 @@
 
 #define DBG_DefineCategories FastMemoryLoopback
 #define DBG_SetDefaultOps AddCat(FastMemoryLoopback)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nFastMemoryLoopback {
 
@@ -160,4 +160,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(FastMemoryLoopback, nFastMemoryLoopback);
 #define FLEXUS_END_COMPONENT FastMemoryLoopback
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

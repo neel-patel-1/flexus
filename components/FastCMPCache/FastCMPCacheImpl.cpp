@@ -71,7 +71,7 @@
 /*
   #define DBG_DefineCategories CMPCache
   #define DBG_SetDefaultOps AddCat(CMPCache) Comp(*this)
-  #include DBG_Control()
+  #include DBG_Control
 */
 
 #define FLEXUS_BEGIN_COMPONENT FastCMPCache
@@ -963,4 +963,4 @@ FLEXUS_PORT_ARRAY_WIDTH(FastCMPCache, RegionNotifyOut) {
 #define FLEXUS_END_COMPONENT FastCMPCache
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

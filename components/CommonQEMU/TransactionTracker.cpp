@@ -50,7 +50,7 @@
 #include <components/CommonQEMU/Slices/TransactionTracker.hpp>
 
 #define DBG_DefineCategories TransactionTrace, TransactionDetailsTrace
-#include DBG_Control()
+#include DBG_Control
 
 static const int32_t kMinLatency = 20;
 

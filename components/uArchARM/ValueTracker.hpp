@@ -91,7 +91,7 @@ namespace API = Flexus::Qemu::API;
 #include <components/CommonQEMU/Slices/MemOp.hpp>
 
 #define DBG_DeclareCategories Special
-#include DBG_Control()
+#include DBG_Control
 using namespace Flexus::SharedTypes;
 
 namespace nuArchARM {

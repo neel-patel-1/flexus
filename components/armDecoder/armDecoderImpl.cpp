@@ -51,7 +51,7 @@
 
 #define DBG_DefineCategories armDecoder
 #define DBG_SetDefaultOps AddCat(armDecoder)
-#include DBG_Control()
+#include DBG_Control
 
 #include <boost/weak_ptr.hpp>
 #include <components/MTManager/MTManager.hpp>
@@ -242,4 +242,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(armDecoder, narmDecoder);
 #define FLEXUS_END_COMPONENT armDecoder
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

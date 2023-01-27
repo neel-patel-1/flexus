@@ -61,7 +61,7 @@ using nCommonUtil::log_base2;
 
 #define DBG_DefineCategories SplitDestinationMapper
 #define DBG_SetDefaultOps AddCat(SplitDestinationMapper) Comp(*this)
-#include DBG_Control()
+#include DBG_Control
 
 #define FLEXUS_BEGIN_COMPONENT SplitDestinationMapper
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
@@ -1014,4 +1014,4 @@ FLEXUS_PORT_ARRAY_WIDTH(SplitDestinationMapper, MemoryOut) {
 #define FLEXUS_END_COMPONENT SplitDestinationMapper
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control

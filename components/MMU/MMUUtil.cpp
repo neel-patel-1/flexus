@@ -58,7 +58,7 @@
 
 #define DBG_DefineCategories MMUCat
 #define DBG_SetDefaultOps AddCat(MMUCat)
-#include DBG_Control()
+#include DBG_Control
 
 namespace nMMU {
 

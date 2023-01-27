@@ -68,7 +68,7 @@ using namespace Flexus;
 
 #define DBG_DefineCategories NonInclusiveMESIPolicyCat
 #define DBG_SetDefaultOps AddCat(NonInclusiveMESIPolicyCat)
-#include DBG_Control()
+#include DBG_Control
 
 #include <components/CMPCache/ProcessEntry.hpp>
 

@@ -67,7 +67,7 @@ using namespace Core;
 
 #define MyLevel Iface
 
-#include DBG_Control()
+#include DBG_Control
 
 namespace nTraceTracker {
 

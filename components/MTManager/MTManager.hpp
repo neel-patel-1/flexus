@@ -49,7 +49,7 @@
 #include <core/target.hpp>
 #include <core/types.hpp>
 
-#include DBG_Control()
+#include DBG_Control
 
 namespace nMTManager {
 

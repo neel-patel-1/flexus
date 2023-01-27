@@ -52,7 +52,7 @@
 
 #define DBG_DefineCategories Memory
 #define DBG_SetDefaultOps AddCat(Memory)
-#include DBG_Control()
+#include DBG_Control
 
 #include <components/CommonQEMU/MemoryMap.hpp>
 #include <components/CommonQEMU/Slices/ExecuteState.hpp>
@@ -281,4 +281,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(MemoryLoopback, nMemoryLoopback);
 #define FLEXUS_END_COMPONENT MemoryLoopback
 
 #define DBG_Reset
-#include DBG_Control()
+#include DBG_Control
