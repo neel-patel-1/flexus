@@ -46,7 +46,7 @@
 #define FLEXUS_DECOUPLED_FEEDER_QEMU_TRACER_HPP_INCLUDED
 
 #include <components/CommonQEMU/Slices/MemoryMessage.hpp>
-
+#include <core/qemu/api_wrappers.hpp>
 namespace nDecoupledFeeder {
 
 using Flexus::SharedTypes::MemoryMessage;
@@ -68,6 +68,9 @@ struct QemuTracerManager {
   virtual void setSystemTick(double aTickFreq) = 0;
   virtual void updateStats() = 0;
 };
+
+void TraceMemHierOperate(void *obj, Flexus::Qemu::API::memory_transaction_t *mem_trans);
+void DMAMemHierOperate(void *obj, Flexus::Qemu::API::memory_transaction_t *mem_trans);
 
 } // namespace nDecoupledFeeder
 

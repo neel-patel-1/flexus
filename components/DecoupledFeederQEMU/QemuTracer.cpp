@@ -73,11 +73,6 @@ namespace API = Qemu::API;
 
 std::set<API::conf_object_t *> theTimingModels;
 const uint32_t kLargeMemoryQueue = 16000;
-extern "C" {
-void TraceMemHierOperate(void *obj, API::conf_object_t *space,
-                         API::memory_transaction_t *mem_trans);
-void DMAMemHierOperate(void *obj, API::conf_object_t *space, API::memory_transaction_t *mem_trans);
-}
 
 struct TracerStats {
   Stat::StatCounter theMemOps_stat;
@@ -256,8 +251,7 @@ public:
     return k_no_stall; // Never stalls
   }
 
-  API::cycles_t trace_mem_hier_operate(API::conf_object_t *space,
-                                       API::memory_transaction_t *mem_trans) {
+  API::cycles_t trace_mem_hier_operate(API::memory_transaction_t *mem_trans) {
     // debugTransaction(mem_trans); // ustiugov: uncomment to track every memory
     // op Flexus::SharedTypes::MemoryMessage msg(MemoryMessage::LoadReq);
     // toL1D((int32_t) 0, msg);
@@ -554,8 +548,7 @@ public:
   void updateStats() {
   }
 
-  API::cycles_t dma_mem_hier_operate(API::conf_object_t *space,
-                                     API::memory_transaction_t *mem_trans) {
+  API::cycles_t dma_mem_hier_operate(API::memory_transaction_t *mem_trans) {
 
     const int32_t k_no_stall = 0;
     // debugTransaction(mem_trans);
@@ -599,8 +592,7 @@ public:
 
 class QemuTracerManagerImpl : public QemuTracerManager {
   int32_t theNumCPUs;
-  bool theClientServer;
-  QemuTracer *theTracers;
+  QemuTracer *theTracers; // QEMU Components that have support for callbacks
   DMATracer theDMATracer;
   std::function<void(int, MemoryMessage &)> toL1D;
   std::function<void(int, MemoryMessage &, uint32_t)> toL1I;
@@ -729,17 +721,15 @@ QemuTracerManager::construct(int32_t aNumCPUs, std::function<void(int, MemoryMes
   return new QemuTracerManagerImpl(aNumCPUs, toL1D, toL1I, toDMA, toNAW,
                                    /* aWhiteBoxDebug, aWhiteBoxPeriod,*/ aSendNonAllocatingStores);
 }
-extern "C" {
-void TraceMemHierOperate(void *obj, API::conf_object_t *space,
-                         API::memory_transaction_t *mem_trans) {
+
+void TraceMemHierOperate(void *obj, API::memory_transaction_t *mem_trans) {
   // Thread safe as is, no need to add muteces
   QemuTracer *tracer = reinterpret_cast<QemuTracer *>(obj);
-  (*tracer)->trace_mem_hier_operate(space, mem_trans);
+  (*tracer)->trace_mem_hier_operate(mem_trans);
 };
-void DMAMemHierOperate(void *obj, API::conf_object_t *space, API::memory_transaction_t *mem_trans) {
+void DMAMemHierOperate(void *obj, API::memory_transaction_t *mem_trans) {
   DMATracerImpl *tracer = reinterpret_cast<DMATracerImpl *>(obj);
-  tracer->dma_mem_hier_operate(space, mem_trans);
+  tracer->dma_mem_hier_operate(mem_trans);
 };
-}
 
 } // namespace nDecoupledFeeder
