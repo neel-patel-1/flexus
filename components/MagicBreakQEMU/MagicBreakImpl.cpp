@@ -364,3 +364,4 @@ FLEXUS_COMPONENT_INSTANTIATOR(MagicBreak, nMagicBreak);
 
 #define DBG_Reset
 #include DBG_Control
+// vscode fix parsing

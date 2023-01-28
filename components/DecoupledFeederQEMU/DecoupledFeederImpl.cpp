@@ -350,3 +350,4 @@ FLEXUS_PORT_ARRAY_WIDTH(DecoupledFeeder, ToMMU) {
 
 #define DBG_Reset
 #include DBG_Control
+// vscode break parsing
