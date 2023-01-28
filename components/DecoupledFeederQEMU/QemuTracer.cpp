@@ -693,7 +693,14 @@ private:
     // theTracers[0]->toL1D((int32_t) 0, msg);
     // Should not be here, need to also change the function
     //    registerTimingInterface(&theTracers[ii]);
-    registerTimingInterface();
+
+    // Register memory interface: Insert QEMU callbacks for instruction fetch and data access
+    for (int i = 0; i < theNumCPUs; i++) {
+      API::conf_object_t *cpu = API::QEMU_get_cpu_by_index(i);
+      API::QEMU_insert_callback(API::QEMU_get_cpu_index(cpu), API::QEMU_cpu_mem_trans,
+                                reinterpret_cast<void *>(theTracers + i),
+                                reinterpret_cast<void *>(&TraceMemHierOperate));
+    }
   }
 
   void createDMATracer(void) {
@@ -706,46 +713,7 @@ private:
     DBG_(Crit, (<< "Connecting to DMA memory map"));
     theDMATracer->init(toDMA);
 
-    registerDMAInterface();
-  }
-
-  void registerTimingInterface(/*QemuTracerImpl * p*/) {
-    // XXX: Pass addr of each individual tracer object depending on number
-    // of CPUs. Now need to revamp the callback interface to integrate
-    // conf_object_t, so that callbacks can be called per configuration
-    // object and not in a global context (because that's not how it's
-    // supposed to work).
-    /*API::QEMU_insert_callback(
-                      Flexus::Qemu::API::QEMU_trace_mem_hier
-                    , callback
-                    );*/
-    // TODO figure out how to get the cpuNum
-    QemuTracer *p = (theTracers);
-    if (p) {
-
-      // Flexus::SharedTypes::MemoryMessage msg(MemoryMessage::LoadReq);
-      //   (p[0])->toL1D((int32_t) 0, msg);
-    }
-    // FIXME: I am not sure how best to pass the object to the callback
-    // function. This way could possibly cause problems with multiple cpus
-    for (int i = 0; i < theNumCPUs; i++) {
-      API::conf_object_t *cpu = API::QEMU_get_cpu_by_index(i);
-      API::QEMU_insert_callback(API::QEMU_get_cpu_index(cpu), API::QEMU_cpu_mem_trans,
-                                reinterpret_cast<void *>(theTracers + i),
-                                reinterpret_cast<void *>(&TraceMemHierOperate));
-    }
-  }
-
-  void registerDMAInterface() {
-    // XXX: See above
-    /*
-    void *callback = (&this->dma_mem_hier_operate);
-    API::QEMU_insert_callback(
-                      Flexus::Qemu::API::QEMU_trace_mem_hier
-                    , callback
-                    );*/
-    // FIXME: I am not sure how best to pass the object to the callback
-    // function. This way could possibly cause problems with multiple cpus
+  // Register DMA interface: Insert QEMU callbacks for DMA accesses
     DMATracerImpl *p = (&theDMATracer);
     API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, API::QEMU_dma_mem_trans, ((void *)p),
                               (void *)&DMAMemHierOperate);
