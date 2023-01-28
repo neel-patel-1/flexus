@@ -3,15 +3,6 @@
 #include <core/flexus.hpp>
 #include <gtest/gtest.h>
 
-namespace Flexus {
-
-namespace Core {
-void CreateFlexusObject();
-void PrepareFlexusObject();
-void deinitFlexus();
-} // namespace Core
-} // namespace Flexus
-
 // Create fixture for testing the DUT
 class MemoryLoopbackTestFixture : public testing::Test {
   static MemoryMapConfiguration_struct *aMMCfg;      // A dummy configuration
@@ -22,7 +13,6 @@ protected:
   static void SetUpTestCase() {
 
     // Create Flexus base
-    Flexus::Core::PrepareFlexusObject();
     Flexus::Core::CreateFlexusObject();
 
     // Create a memory map to construct a memory map factory object which is used by
@@ -40,7 +30,7 @@ protected:
     delete aMemoryMap;
 
     // Exit flexus
-    Flexus::Core::deinitFlexus();
+    Flexus::Core::flexusStop();
   }
 
   void SetUp() {

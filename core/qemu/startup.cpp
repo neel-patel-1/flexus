@@ -58,60 +58,31 @@
 #include <core/target.hpp>
 #include <core/flexus.hpp>
 
-#define QEMUFLEX_FLEXUS_INTERNAL
-#include <core/qemu/api_wrappers.hpp>
+static void print_copyright(void);
 
-extern "C" void qmp_call(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
-  Flexus::Core::callQMP(aCMD, anArgs);
+extern "C" void qflex_sim_qmp(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
+  Flexus::Core::flexusQMP(aCMD, anArgs);
 }
 
-extern "C" void flexDeinit() {
-  Flexus::Core::deinitFlexus();
-}
-
-extern "C" void startTiming() {
-  Flexus::Core::startTimingFlexus(); 
+extern "C" void qflex_sim_start_timing() {
+  Flexus::Core::flexusStartTiming(); 
 }
 
 // Hooked with `dlsym` in `flexus_proxy.c`
-static void print_copyright(void);
 extern "C" void qflex_sim_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks, int nb_cores, const char *config_file) {
   print_copyright();
-
   QFLEX_API_set_Interface_Hooks(hooks);
-  Flexus::Core::setCfg(config_file);
-
   if (getenv("WAITFORSIGCONT")) {
     std::cerr << "Waiting for SIGCONT..." << std::endl;
     std::cerr << "Attach gdb with the following command and 'c' from the gdb prompt:" << std::endl;
     std::cerr << "  gdb - " << getpid() << std::endl;
     raise(SIGSTOP);
   }
-
-  DBG_(Dev, (<< "Initializing Flexus."));
-  DBG_(Dev, (<< "Compiled with Boost: " << BOOST_VERSION / 100000 << "."
-             << BOOST_VERSION / 100 % 1000 << "." << BOOST_VERSION % 100));
-
-  // Do all the stuff we need to get Simics to know we are here
-  Flexus::Core::PrepareFlexusObject();
-  Flexus::Core::CreateFlexusObject();
-
-  Flexus::Core::index_t system_width = nb_cores;
-
-  DBG_(Crit, (<< "Instantiating Flexus components with SystemWidth = " << system_width));
-
-  Flexus::Core::ComponentManager::getComponentManager().instantiateComponents(system_width);
-  Flexus::Core::ConfigurationManager::getConfigurationManager().processCommandLineConfiguration(0, 0);
-
-  DBG_(Iface, (<< "Flexus Configured."));
-
-  Flexus::Core::initFlexus();
-
-  DBG_(Iface, (<< "Flexus Initialized."));
+  Flexus::Core::flexusInit(nb_cores, config_file);
 }
 
-extern "C" void qflex_quit(void) {
-  flexDeinit();
+extern "C" void qflex_sim_quit(void) {
+  Flexus::Core::flexusStop();
 }
 
 // clang-format off

@@ -759,24 +759,9 @@ public:
 typedef Qemu::Factory<Flexus_Obj> FlexusFactory;
 Flexus_Obj theFlexusObj;
 FlexusFactory *theFlexusFactory;
-FlexusInterface *theFlexus = 0; // This is initialized from startup.cpp
+FlexusInterface *theFlexus = nullptr; // This is initialized from startup.cpp
 
-
-
-void CreateFlexusObject() {
-  theFlexusObj = Core::theFlexusFactory->create("flexus");
-  theFlexus = &Core::theFlexusObj;
-  if (!theFlexus) {
-    DBG_Assert(false, (<< "Unable to create Flexus object in Simics"));
-  }
-}
-
-void setCfg(const char *aFile) {
-  config_file = aFile;
-}
-
-void callQMP(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
-
+void flexusQMP(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
   try {
     qmp_flexus_i &q = qmp(aCMD);
     if (anArgs != NULL) {
@@ -789,26 +774,52 @@ void callQMP(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
   }
 }
 
-// Might not be best.
-void initFlexus() {
+void flexusInit(int nb_cores, const char* config_file_) {
+  if (theFlexus != nullptr) {
+    DBG_(Crit, (<< "Flexus already initialized"));
+  }
+  config_file = config_file_;
+
+  DBG_(Dev, (<< "Initializing Flexus."));
+  DBG_(Dev, (<< "Compiled with Boost: " << BOOST_VERSION / 100000 << "."
+             << BOOST_VERSION / 100 % 1000 << "." << BOOST_VERSION % 100));
+
+  // Do all the stuff we need to get Simics to know we are here
+  CreateFlexusObject();
+  index_t system_width = nb_cores;
+  DBG_(Crit, (<< "Instantiating Flexus components with SystemWidth = " << system_width));
+  ComponentManager::getComponentManager().instantiateComponents(system_width);
+  ConfigurationManager::getConfigurationManager().processCommandLineConfiguration(0, 0);
+  DBG_(Iface, (<< "Flexus Configured."));
   theFlexus->initializeComponents();
+  DBG_(Iface, (<< "Flexus Initialized."));
 }
 
-void deinitFlexus() {
-  DBG_(VVerb, (<< "Cleaning up Flexus"));
+void flexusInsertCallbacks(void) {
 
+}
+
+void flexusStop() {
+  DBG_(VVerb, (<< "Cleaning up Flexus"));
   if (theFlexusFactory)
     delete theFlexusFactory;
+  // TODO: More structures to cleanup?
 }
-void startTimingFlexus() {
+
+void flexusStartTiming() {
   while (Qemu::API::QEMU_getCyclesLeft() > 1) {
     theFlexus->doCycle();
   }
   theFlexus->terminateSimulation();
 }
 
-void PrepareFlexusObject() {
+void CreateFlexusObject() {
   Core::theFlexusFactory = new FlexusFactory();
+  theFlexusObj = Core::theFlexusFactory->create("flexus");
+  theFlexus = &Core::theFlexusObj;
+  if (!theFlexus) {
+    DBG_Assert(false, (<< "Unable to create Flexus object in Simics"));
+  }
 }
 
 } // namespace Core

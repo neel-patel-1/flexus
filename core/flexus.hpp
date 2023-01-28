@@ -51,14 +51,15 @@
 
 namespace Flexus {
 namespace Core {
-
 void CreateFlexusObject();
-void PrepareFlexusObject();
-void initFlexus();
-void deinitFlexus();
-void callQMP(Qemu::API::qmp_flexus_cmd_t aCMD, const char *args);
-void setCfg(const char *aFile);
-void startTimingFlexus();
+
+// Interface to QEMU
+void flexusInit(int nb_cores, const char *config_file);
+void flexusStop();
+void flexusStartTiming();
+void flexusQMP(Qemu::API::qmp_flexus_cmd_t aCMD, const char *args);
+
+// Flexus 
 
 class FlexusInterface {
 public:
