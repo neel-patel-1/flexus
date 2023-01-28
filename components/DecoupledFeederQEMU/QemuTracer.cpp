@@ -619,7 +619,7 @@ public:
                         //	  , bool aWhiteBoxDebug
                         //	  , int32_t aWhiteBoxPeriod
                         bool aSendNonAllocatingStores)
-      : theNumCPUs(aNumCPUs), theClientServer(false), toL1D(aToL1D), toL1I(aToL1I), toDMA(aToDMA),
+      : theNumCPUs(aNumCPUs), toL1D(aToL1D), toL1I(aToL1I), toDMA(aToDMA),
         toNAW(aToNAW),
         //  , theWhiteBoxDebug(aWhiteBoxDebug)
         //  , theWhiteBoxPeriod(aWhiteBoxPeriod)
@@ -632,7 +632,6 @@ public:
 
     // Flexus::SharedTypes::MemoryMessage msg(MemoryMessage::LoadReq);
     // toL1D((int32_t) 0, msg);
-    detectClientServer();
     createTracers();
     createDMATracer();
     DBG_(Dev, (<< "Done initializing QemuTracerManager."));
@@ -658,12 +657,10 @@ public:
   }
 
   void enableInstructionTracing() {
+    DBG_Assert(false, (<< "Instruction Tracing not supported"));
   }
 
 private:
-  void detectClientServer() {
-    theClientServer = false;
-  }
 
   void createTracers() {
     theTracers = new QemuTracer[theNumCPUs];
