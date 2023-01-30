@@ -58,18 +58,21 @@
 #include <core/target.hpp>
 #include <core/flexus.hpp>
 
-static void print_copyright(void);
+#include <core/qemu/api_wrappers.hpp>
 
-extern "C" void qflex_sim_qmp(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
+static void print_copyright(void);
+extern "C" {
+
+void qflex_sim_qmp(Flexus::Qemu::API::qmp_flexus_cmd_t aCMD, const char *anArgs) {
   Flexus::Core::flexusQMP(aCMD, anArgs);
 }
 
-extern "C" void qflex_sim_start_timing() {
+void qflex_sim_start_timing() {
   Flexus::Core::flexusStartTiming(); 
 }
 
 // Hooked with `dlsym` in `flexus_proxy.c`
-extern "C" void qflex_sim_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks, int nb_cores, const char *config_file) {
+void qflex_sim_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *hooks, int nb_cores, const char *config_file) {
   print_copyright();
   QFLEX_API_set_Interface_Hooks(hooks);
   if (getenv("WAITFORSIGCONT")) {
@@ -81,8 +84,10 @@ extern "C" void qflex_sim_init(Flexus::Qemu::API::QFLEX_API_Interface_Hooks_t *h
   Flexus::Core::flexusInit(nb_cores, config_file);
 }
 
-extern "C" void qflex_sim_quit(void) {
+void qflex_sim_quit(void) {
   Flexus::Core::flexusStop();
+}
+
 }
 
 // clang-format off
@@ -141,3 +146,44 @@ static void print_copyright(void) {
   std::cerr << " QFlex simulator - Built as " << Flexus::theSimulatorName << std::endl << std::endl;
 }
 // clang-format on
+
+
+// Callbacks from Trace mode
+extern "C" {
+
+void qflex_sim_callbacks_periodic(void) {
+  DBG_Assert(Flexus::qflex_sim_callbacks.periodic.fn != NULL, (<< "Callback was never intialized but still was called"));
+  ((Flexus::QFLEX_SIM_CALLBACK_PERIODIC) Flexus::qflex_sim_callbacks.periodic.fn)(Flexus::qflex_sim_callbacks.periodic.obj);
+}
+
+void qflex_sim_callbacks_trace_mem(int cpu_index, Flexus::Qemu::API::memory_transaction_t *mem_trans) {
+  DBG_Assert(Flexus::qflex_sim_callbacks.trace_mem != NULL, (<< "Callback was never intialized but still was called"));
+  ((Flexus::QFLEX_SIM_CALLBACK_TRACE_MEM) Flexus::qflex_sim_callbacks.trace_mem[cpu_index].fn)(Flexus::qflex_sim_callbacks.trace_mem[cpu_index].obj, mem_trans);
+}
+
+void qflex_sim_callbacks_trace_mem_dma(Flexus::Qemu::API::memory_transaction_t *mem_trans) {
+  DBG_Assert(Flexus::qflex_sim_callbacks.trace_mem_dma.obj != NULL, (<< "Callback was never intialized but still was called"));
+  ((Flexus::QFLEX_SIM_CALLBACK_TRACE_MEM_DMA) Flexus::qflex_sim_callbacks.trace_mem_dma.fn)(Flexus::qflex_sim_callbacks.trace_mem_dma.obj, mem_trans);
+}
+
+void qflex_sim_callbacks_magic_inst(int cpu_index, long long aBreakpoint) {
+  for (int type = 0; type < Flexus::Qemu::API::MagicInstsTotalHooks; type++) {
+    if(Flexus::qflex_sim_callbacks.magic_inst[type].obj != NULL){
+      ((Flexus::QFLEX_SIM_CALLBACK_MAGIC_INST) Flexus::qflex_sim_callbacks.magic_inst[type].fn)(Flexus::qflex_sim_callbacks.magic_inst[type].obj, cpu_index, aBreakpoint);
+    } else {
+     DBG_(Crit, (<< "Callback was never intialized but still was called"));
+    }
+  }
+}
+
+void qflex_sim_callbacks_ethernet_frame(int32_t aNetworkID, int32_t aFrameType, long long aTimestamp) {
+  DBG_Assert(Flexus::qflex_sim_callbacks.ethernet_frame.obj != NULL, (<< "Callback was never intialized but still was called"));
+  ((Flexus::QFLEX_SIM_CALLBACK_ETHERNET_FRAME) Flexus::qflex_sim_callbacks.ethernet_frame.fn)(Flexus::qflex_sim_callbacks.ethernet_frame.obj, aNetworkID, aFrameType, aTimestamp);
+}
+
+void qflex_sim_callbacks_xterm_break_string(char *aString) {
+  DBG_Assert(Flexus::qflex_sim_callbacks.xterm_break_string.obj != NULL, (<< "Callback was never intialized but still was called"));
+  ((Flexus::QFLEX_SIM_CALLBACK_XTERM_BREAK_STRING) Flexus::qflex_sim_callbacks.xterm_break_string.fn)(Flexus::qflex_sim_callbacks.xterm_break_string.obj, aString);
+}
+	
+}

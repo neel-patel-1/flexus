@@ -70,22 +70,6 @@ using namespace Flexus::Qemu;
 namespace nMagicBreak {
 
 namespace Stat = Flexus::Stat;
-// declare functions here
-extern "C" {
-void IterationTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                     long long aBreakpoint);
-void TransactionTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                       long long aBreakpoint);
-void BreakpointTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                      long long aBreakpoint);
-void RegressionTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                      long long aRegression);
-void SimPrintHandlerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                    long long aBreakpoint);
-void PacketTrackerEthernetFrame(void *obj, int32_t aNetworkID, int32_t aFrameType,
-                                long long aTimestamp);
-void ConsoleStringTrackerXTermString(void *obj, Qemu::API::conf_object_t *ignored, char *aString);
-}
 
 class IterationTrackerImpl : public IterationTracker {
   static const int32_t kIterationCountBreakpoint = 4;
@@ -95,8 +79,7 @@ class IterationTrackerImpl : public IterationTracker {
   bool theCkptFlag;
 
 public:
-  void OnMagicBreakpoint(Qemu::API::conf_object_t *aCpu, uint64_t aBreakpoint) {
-    uint32_t cpu_no = Qemu::API::QEMU_get_cpu_index(aCpu);
+  void OnMagicBreakpoint(int cpu_index, uint64_t aBreakpoint) {
 
 #if FLEXUS_TARGET_IS(x86)
     int64_t pc = Qemu::API::QEMU_get_program_counter(aCpu);
@@ -112,6 +95,7 @@ public:
     aBreakpoint &= 0x0FFL;
 #endif
 
+    uint32_t cpu_no = cpu_index;
     if (aBreakpoint == kIterationCountBreakpoint) {
       if (cpu_no >= theIterationCounts.size()) {
         theIterationCounts.resize(cpu_no + 1, 0);
@@ -141,14 +125,7 @@ public:
       }
     }
   }
-  // Not sure if this goes here-- seems like wrong place
-  // Qemu::API::QEMU_insert_callback(
-  //		    Qemu::API::QEMU_callback_event_t = QEMU_magic_instruction
-  ///		  , (void*) this
-  //		  , (void*)&IterationTrackerMagicBreakpoint
-  //		  );
 
-public:
   IterationTrackerImpl() : theEndIteration(-1), theCkptFlag(false) {
   }
 
@@ -165,8 +142,8 @@ public:
   }
   void enable() {
     // theMagicBreakpointHap.reset(new on_magic_break_t(this));
-    Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_magic_instruction,
-                                    (void *)this, (void *)&IterationTrackerMagicBreakpoint);
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicIterationTracker].obj = (void *) this;
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicIterationTracker].fn = (void *) &IterationTrackerMagicBreakpoint;
 
     int32_t iter = 0;
     if (theIterationCounts.size() > 0) {
@@ -233,7 +210,7 @@ class TransactionTrackerImpl : public BreakpointTracker {
   uint64_t theCycleMinimum;
 
 public:
-  void OnMagicBreakpoint(Qemu::API::conf_object_t *aCpu, uint64_t aBreakpoint) {
+  void OnMagicBreakpoint(int cpu_index, uint64_t aBreakpoint) {
 
 #if FLEXUS_TARGET_IS(x86)
     int64_t pc = Qemu::API::QEMU_get_program_counter(aCpu);
@@ -387,14 +364,7 @@ public:
       break;
     }
   }
-  // Don't think it should be here
-  //  Qemu::API::QEMU_insert_callback(
-  //		    Qemu::API::QEMU_magic_instruction
-  //		  , (void*) this
-  //		  , (void*)&TransactionTrackerOnMagicBreakpoint
-  //		  );
 
-public:
   TransactionTrackerImpl(int32_t aTransactionType, int32_t aStopTransaction, int32_t aStatInterval,
                          int32_t aCkptInterval, int32_t aFirstTransactionIs, uint64_t aCycleMinimum)
       : statDB2_Interval("DB2 Interval"), statDB2_NewOrder_Start("DB2 NewOrder(begin)"),
@@ -421,8 +391,8 @@ public:
     }
 
     // not sure it goes here
-    Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_magic_instruction,
-                                    (void *)this, (void *)&TransactionTrackerMagicBreakpoint);
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicTransactionTracker].obj = (void *) this;
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicTransactionTracker].fn = (void *) &TransactionTrackerMagicBreakpoint;
   }
 };
 
@@ -430,7 +400,7 @@ class TerminateOnMagicBreakTracker : public BreakpointTracker {
   int32_t theMagicBreakpoint;
 
 public:
-  void OnMagicBreakpoint(Qemu::API::conf_object_t *aCpu, long long aBreakpoint) {
+  void OnMagicBreakpoint(int cpu_index, long long aBreakpoint) {
 
 #if FLEXUS_TARGET_IS(x86)
     int64_t pc = Qemu::API::QEMU_get_program_counter(aCpu);
@@ -453,17 +423,10 @@ public:
       Flexus::Core::theFlexus->terminateSimulation();
     }
   }
-  // Does not go here
-  //  Qemu::API::QEMU_insert_callback(
-  //		    Qemu::API::QEMU_magic_instruction
-  //		  , (void*) this
-  //		  , &BreakpointTrackerMagicBreakpoint
-  //		  );
 
-public:
   TerminateOnMagicBreakTracker(int32_t aBreakpoint) : theMagicBreakpoint(aBreakpoint) {
-    Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_magic_instruction,
-                                    (void *)this, (void *)&BreakpointTrackerMagicBreakpoint);
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicBreakpointTracker].obj = (void *) this;
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicBreakpointTracker].fn = (void *) &BreakpointTrackerMagicBreakpoint;
   }
 };
 
@@ -471,9 +434,11 @@ class RegressionTrackerImpl : public RegressionTracker {
 private:
   int system_width;
   std::vector<int> struct_id;
+  int64_t theLastBreakpoint;
+  int64_t theStopBreakpoint;
 
 public:
-  void OnMagicBreakpoint(Qemu::API::conf_object_t *aCpu, long long aBreakpoint) {
+  void OnMagicBreakpoint(int cpu_index, long long aBreakpoint) {
     DBG_(Dev, (<< "Regression Testing Breakpoint: " << aBreakpoint));
     if (aBreakpoint == theStopBreakpoint) {
       DBG_(Dev, (<< "Stop breakpoint.  Terminating Simulation."));
@@ -482,13 +447,14 @@ public:
     theLastBreakpoint = aBreakpoint;
   }
 
-  int64_t theLastBreakpoint;
-  int64_t theStopBreakpoint;
-
-public:
   RegressionTrackerImpl()
       : system_width(ComponentManager::getComponentManager().systemWidth()),
         struct_id(system_width), theLastBreakpoint(0), theStopBreakpoint(1) {
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicRegressionTracker].obj = (void *) this;
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicRegressionTracker].fn = (void *) &RegressionTrackerMagicBreakpoint;
+
+    // DBG_Assert(false, (<< "Function not supported"));
+    /*
     for (int i = 0; i < system_width; i++) {     // init a callback for each cpu
       int r = Qemu::API::QEMU_insert_callback(i, // cpu-idx
                                               Qemu::API::QEMU_magic_instruction, (void *)this,
@@ -504,6 +470,7 @@ public:
               << i << ", struct id = " << r));
       }
     }
+    // */
   }
 
   void enable() {
@@ -745,9 +712,9 @@ class SimPrintHandlerImpl : public SimPrintHandler {
   }
 
 public:
-  void OnMagicBreakpoint(Qemu::API::conf_object_t *aCpu, long long aBreakpoint) {
+  void OnMagicBreakpoint(int cpu_index, long long aBreakpoint) {
 #if FLEXUS_TARGET_IS(v9)
-    uint32_t cpu_no = Qemu::API::QEMU_get_cpu_index(aCpu);
+    uint32_t cpu_no = cpu_index;
 
     switch (aBreakpoint) {
     case 0x666: {
@@ -915,13 +882,9 @@ public:
 #endif // FLEXUS_TARGET_IS(v9)
   }
 
-  int64_t theLastBreakpoint;
-  int64_t theStopBreakpoint;
-
-public:
   SimPrintHandlerImpl() {
-    Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_magic_instruction,
-                                    (void *)this, (void *)&SimPrintHandlerMagicBreakpoint);
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicSimPrintHandler].obj = (void *) this;
+    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicSimPrintHandler].fn = (void *) &SimPrintHandlerMagicBreakpoint;
   }
 };
 
@@ -1022,28 +985,19 @@ public:
         theServerTxData("sys-ServerTxData") {
     theNetwork = Qemu::API::QEMU_get_ethernet();
     if (theNetwork != 0) {
-      // Qemu::API::QEMU_insert_callback(Qemu::API::QEMU_ethernet_frame,
-      // &this->OnPacket);
-      Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_ethernet_frame,
-                                      (void *)this, (void *)&PacketTrackerEthernetFrame);
+      Flexus::qflex_sim_callbacks.ethernet_frame.obj = (void *) this;
+      Flexus::qflex_sim_callbacks.ethernet_frame.fn = (void *) &PacketTrackerEthernetFrame;
     }
   }
 };
 
-class ConsoleStringTrackerImpl : public ConsoleStringTracker {
+class ConsoleStringTrackerImpl : virtual public ConsoleStringTracker {
 public:
   void OnXtermString(Qemu::API::conf_object_t *ignored, char *aString) {
     DBG_(Dev, (<< "Console termination string " << aString << " has appeared."));
     Flexus::Core::theFlexus->terminateSimulation();
   }
-  // does not belong probably
-  // Qemu::API::QEMU_insert_callback(
-  //	    Qemu::API::QEMU_xterm_break_string
-  //	  , static_cast<void*> this
-  //	  , &ConsoleStringTrackerXTermString
-  //	  );
 
-public:
   void addString(std::string const &aString) {
 #if 0
     Simics::API::conf_object_t * con = Simics::API::SIM_get_object("con0");
@@ -1061,35 +1015,29 @@ public:
   }
 
   ConsoleStringTrackerImpl() {
-    Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_xterm_break_string,
-                                    (void *)this, (void *)&ConsoleStringTrackerXTermString);
+    Flexus::qflex_sim_callbacks.xterm_break_string.obj = (void *) this;
+    Flexus::qflex_sim_callbacks.xterm_break_string.fn = (void *) &ConsoleStringTrackerXTermString;
   }
 };
 
-extern "C" {
-void SimPrintHandlerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                    long long aBreakpoint) {
-  static_cast<class SimPrintHandlerImpl *>(obj)->OnMagicBreakpoint(aCpu, aBreakpoint);
+void SimPrintHandlerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint) {
+  static_cast<class SimPrintHandlerImpl *>(obj)->OnMagicBreakpoint(cpu_index, aBreakpoint);
 }
 
-void IterationTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                     long long aBreakpoint) {
-  static_cast<class IterationTrackerImpl *>(obj)->OnMagicBreakpoint(aCpu, aBreakpoint);
+void IterationTrackerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint) {
+  static_cast<class IterationTrackerImpl *>(obj)->OnMagicBreakpoint(cpu_index, aBreakpoint);
 }
 
-void TransactionTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                       long long aBreakpoint) {
-  static_cast<class TransactionTrackerImpl *>(obj)->OnMagicBreakpoint(aCpu, aBreakpoint);
+void TransactionTrackerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint) {
+  static_cast<class TransactionTrackerImpl *>(obj)->OnMagicBreakpoint(cpu_index, aBreakpoint);
 }
 
-void BreakpointTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                      long long aBreakpoint) {
-  static_cast<TerminateOnMagicBreakTracker *>(obj)->OnMagicBreakpoint(aCpu, aBreakpoint);
+void BreakpointTrackerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint) {
+  static_cast<TerminateOnMagicBreakTracker *>(obj)->OnMagicBreakpoint(cpu_index, aBreakpoint);
 }
 
-void RegressionTrackerMagicBreakpoint(void *obj, Qemu::API::conf_object_t *aCpu,
-                                      long long aRegression) {
-  // static_cast<RegressionTrackerImpl *>(obj)->OnMagicBreakpoint(aCpu, aRegression);
+void RegressionTrackerMagicBreakpoint(void *obj, int cpu_index, long long aRegression) {
+  static_cast<RegressionTrackerImpl *>(obj)->OnMagicBreakpoint(cpu_index, aRegression);
 }
 
 void ConsoleStringTrackerXTermString(void *obj, Qemu::API::conf_object_t *ignored, char *aString) {
@@ -1099,7 +1047,6 @@ void ConsoleStringTrackerXTermString(void *obj, Qemu::API::conf_object_t *ignore
 void PacketTrackerEthernetFrame(void *obj, int32_t aNetworkID, int32_t aFrameType,
                                 long long aTimestamp) {
   static_cast<PacketTrackerImpl *>(obj)->OnPacket(aNetworkID, aFrameType, aTimestamp);
-}
 }
 
 // FIXME Possibly incorrect in some way, was commented

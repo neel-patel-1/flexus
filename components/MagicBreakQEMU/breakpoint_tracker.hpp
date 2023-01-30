@@ -44,7 +44,7 @@
 //  DO-NOT-REMOVE end-copyright-block
 #include <core/boost_extensions/intrusive_ptr.hpp>
 #include <iostream>
-
+#include <core/qemu/api_wrappers.hpp>
 namespace nMagicBreak {
 
 class IterationTracker;
@@ -70,7 +70,8 @@ public:
   virtual ~BreakpointTracker(){};
 };
 
-struct IterationTracker : public BreakpointTracker {
+class IterationTracker : public BreakpointTracker {
+public:
   virtual void printIterationCounts(std::ostream &aStream) = 0;
   virtual void setIterationCount(uint32_t aCPU, int32_t aCount) = 0;
   virtual void enable() = 0;
@@ -81,23 +82,37 @@ struct IterationTracker : public BreakpointTracker {
   virtual ~IterationTracker(){};
 };
 
-struct RegressionTracker : public BreakpointTracker {
+class RegressionTracker : public BreakpointTracker {
+public:
   virtual void enable() = 0;
   virtual ~RegressionTracker(){};
 };
 
-struct ConsoleStringTracker : public BreakpointTracker {
+class ConsoleStringTracker : public BreakpointTracker {
+public:
   virtual void addString(std::string const &) = 0;
   virtual ~ConsoleStringTracker(){};
 };
 
-struct SimPrintHandler : public BreakpointTracker {
+class SimPrintHandler : public BreakpointTracker {
+public:
   virtual ~SimPrintHandler(){};
 };
 
-struct CycleTracker : public BreakpointTracker {
+class CycleTracker : public BreakpointTracker {
+public:
   virtual void tick() = 0;
   virtual ~CycleTracker(){};
 };
+
+void IterationTrackerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint);
+void TransactionTrackerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint);
+void BreakpointTrackerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint);
+void RegressionTrackerMagicBreakpoint(void *obj, int cpu_index, long long aRegression);
+void SimPrintHandlerMagicBreakpoint(void *obj, int cpu_index, long long aBreakpoint);
+void PacketTrackerEthernetFrame(void *obj, int32_t aNetworkID, int32_t aFrameType,
+                                long long aTimestamp);
+void ConsoleStringTrackerXTermString(void *obj, Flexus::Qemu::API::conf_object_t *ignored,
+                                     char *aString);
 
 } // namespace nMagicBreak

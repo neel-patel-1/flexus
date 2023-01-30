@@ -684,11 +684,10 @@ private:
     //    registerTimingInterface(&theTracers[ii]);
 
     // Register memory interface: Insert QEMU callbacks for instruction fetch and data access
+    Flexus::qflex_sim_callbacks.trace_mem = new Flexus::callback_t[theNumCPUs];
     for (int i = 0; i < theNumCPUs; i++) {
-      API::conf_object_t *cpu = API::QEMU_get_cpu_by_index(i);
-      API::QEMU_insert_callback(API::QEMU_get_cpu_index(cpu), API::QEMU_cpu_mem_trans,
-                                reinterpret_cast<void *>(theTracers + i),
-                                reinterpret_cast<void *>(&TraceMemHierOperate));
+      Flexus::qflex_sim_callbacks.trace_mem[i].obj = (void *) (theTracers + i);
+      Flexus::qflex_sim_callbacks.trace_mem[i].fn = (void *) &TraceMemHierOperate;
     }
   }
 
@@ -702,10 +701,11 @@ private:
     DBG_(Crit, (<< "Connecting to DMA memory map"));
     theDMATracer->init(toDMA);
 
-  // Register DMA interface: Insert QEMU callbacks for DMA accesses
-    DMATracerImpl *p = (&theDMATracer);
-    API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, API::QEMU_dma_mem_trans, ((void *)p),
-                              (void *)&DMAMemHierOperate);
+    // Register DMA interface: Insert QEMU callbacks for DMA accesses
+    for (int i = 0; i < theNumCPUs; i++) {
+      Flexus::qflex_sim_callbacks.trace_mem_dma.obj = (void *) &theDMATracer;
+      Flexus::qflex_sim_callbacks.trace_mem_dma.fn = (void *) &DMAMemHierOperate;
+    }
   }
 };
 

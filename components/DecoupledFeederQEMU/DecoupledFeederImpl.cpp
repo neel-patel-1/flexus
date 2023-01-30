@@ -64,9 +64,6 @@ namespace nDecoupledFeeder {
 
 using namespace Flexus;
 using namespace Flexus::Qemu;
-extern "C" {
-void houseKeeping(void *, void *, void *);
-}
 
 struct MMUStats {
   Stat::StatCounter theTotalReqs_stat;
@@ -97,6 +94,8 @@ struct MMUStats {
   }
 };
 
+void houseKeeping(void *obj);
+ 
 class FLEXUS_COMPONENT(DecoupledFeeder) {
   FLEXUS_COMPONENT_IMPL(DecoupledFeeder);
 
@@ -173,13 +172,15 @@ public:
       theLastICounts[i] = Qemu::API::QEMU_get_instruction_count(i, BOTH_INSTR);
     }
 
-    Qemu::API::QEMU_insert_callback(QEMUFLEX_GENERIC_CALLBACK, Qemu::API::QEMU_periodic_event,
-                                    (void *)this, (void *)&houseKeeping);
     theFlexus->advanceCycles(0);
     theCMPWidth = cfg.CMPWidth;
     if (theCMPWidth == 0) {
       theCMPWidth = Qemu::API::QEMU_get_num_cores();
     }
+
+    // Insert periodic callback
+    Flexus::qflex_sim_callbacks.periodic.obj = (void *) this;
+    Flexus::qflex_sim_callbacks.periodic.fn =  (void *) &houseKeeping;
   }
 
   void finalize(void) {
@@ -299,27 +300,14 @@ public:
     theFlexus->invokeDrives();
   }
 
-  void OnPeriodicEvent(Qemu::API::conf_object_t *ignored, long long aPeriod) {
-    doHousekeeping();
-  }
-
-  // typedef Qemu::HapToMemFnBinding<Qemu::HAPs::Core_Periodic_Event, self,
-  // &self::OnPeriodicEvent> periodic_hap_t; periodic_hap_t * thePeriodicHap;
-
 }; // end class DecoupledFeeder
-extern "C" {
-void houseKeeping(void *obj, void *ign, void *ign2) {
+
+void houseKeeping(void *obj) {
   static_cast<DecoupledFeederComponent *>(obj)->doHousekeeping();
 }
-}
+
 } // end Namespace nDecoupledFeeder
 
-// extern "C" {
-// void houseKeeping(void* obj, void * ign, void* ign2){
-//    printf("Is houseKeeping being run?  1\n");
-//        nDecoupledFeeder::houseKeep(obj);
-//}
-//}
 FLEXUS_COMPONENT_INSTANTIATOR(DecoupledFeeder, nDecoupledFeeder);
 FLEXUS_PORT_ARRAY_WIDTH(DecoupledFeeder, ToL1D) {
   //  printf("DecoupldFeeder 1\n");

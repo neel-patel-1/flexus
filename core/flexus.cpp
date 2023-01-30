@@ -795,10 +795,6 @@ void flexusInit(int nb_cores, const char* config_file_) {
   DBG_(Iface, (<< "Flexus Initialized."));
 }
 
-void flexusInsertCallbacks(void) {
-
-}
-
 void flexusStop() {
   DBG_(VVerb, (<< "Cleaning up Flexus"));
   if (theFlexusFactory)
@@ -823,4 +819,22 @@ void CreateFlexusObject() {
 }
 
 } // namespace Core
+
+Flexus::qflex_sim_callbacks_t qflex_sim_callbacks = 
+{
+  .trace_mem = NULL,
+  .trace_mem_dma = {NULL, NULL, },
+  .periodic = {NULL, NULL, },
+  .ethernet_frame = {NULL, NULL, },
+  .xterm_break_string = { NULL, NULL, },
+  .magic_inst = {
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+  },
+};
+
 } // namespace Flexus
