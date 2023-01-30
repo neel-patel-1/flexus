@@ -78,7 +78,6 @@ QEMU_GET_TICK_FREQUENCY_PROC QEMU_get_tick_frequency = nullptr;
 QEMU_GET_PROGRAM_COUNTER_PROC QEMU_get_program_counter = nullptr;
 QEMU_LOGICAL_TO_PHYSICAL_PROC QEMU_logical_to_physical = nullptr;
 QEMU_BREAK_SIMULATION_PROC QEMU_quit_simulation = nullptr;
-QEMU_IS_STOPPED_PROC QEMU_is_stopped = nullptr;
 QEMU_GET_SIMULATION_TIME_PROC QEMU_getCyclesLeft = nullptr;
 QEMU_MEM_OP_IS_DATA_PROC QEMU_mem_op_is_data = nullptr;
 QEMU_MEM_OP_IS_WRITE_PROC QEMU_mem_op_is_write = nullptr;
