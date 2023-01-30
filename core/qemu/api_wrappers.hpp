@@ -49,8 +49,6 @@ namespace Flexus {
 namespace Qemu {
 namespace API {
 #include <core/qemu/api.h>
-
-void QEMU_write_configuration_to_file(const char *aFilename);
 } // namespace API
 } // namespace Qemu
 } // namespace Flexus

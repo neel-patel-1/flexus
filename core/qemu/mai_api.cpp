@@ -57,7 +57,6 @@
 #include <memory>
 
 #include <core/qemu/api_wrappers.hpp>
-#include <core/qemu/qemu.h>
 #include <core/target.hpp>
 #include <core/types.hpp>
 
