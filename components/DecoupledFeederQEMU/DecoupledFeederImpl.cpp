@@ -179,8 +179,8 @@ public:
     }
 
     // Insert periodic callback
-    Flexus::qflex_sim_callbacks.periodic.obj = (void *) this;
-    Flexus::qflex_sim_callbacks.periodic.fn =  (void *) &houseKeeping;
+    Flexus::Qemu::API::qflex_sim_callbacks.periodic.obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.periodic.fn =  (void *) &houseKeeping;
   }
 
   void finalize(void) {

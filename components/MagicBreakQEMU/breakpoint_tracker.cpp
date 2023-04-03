@@ -142,8 +142,8 @@ public:
   }
   void enable() {
     // theMagicBreakpointHap.reset(new on_magic_break_t(this));
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicIterationTracker].obj = (void *) this;
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicIterationTracker].fn = (void *) &IterationTrackerMagicBreakpoint;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicIterationTracker].obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicIterationTracker].fn = (void *) &IterationTrackerMagicBreakpoint;
 
     int32_t iter = 0;
     if (theIterationCounts.size() > 0) {
@@ -391,8 +391,8 @@ public:
     }
 
     // not sure it goes here
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicTransactionTracker].obj = (void *) this;
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicTransactionTracker].fn = (void *) &TransactionTrackerMagicBreakpoint;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicTransactionTracker].obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicTransactionTracker].fn = (void *) &TransactionTrackerMagicBreakpoint;
   }
 };
 
@@ -425,8 +425,8 @@ public:
   }
 
   TerminateOnMagicBreakTracker(int32_t aBreakpoint) : theMagicBreakpoint(aBreakpoint) {
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicBreakpointTracker].obj = (void *) this;
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicBreakpointTracker].fn = (void *) &BreakpointTrackerMagicBreakpoint;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicBreakpointTracker].obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicBreakpointTracker].fn = (void *) &BreakpointTrackerMagicBreakpoint;
   }
 };
 
@@ -450,8 +450,8 @@ public:
   RegressionTrackerImpl()
       : system_width(ComponentManager::getComponentManager().systemWidth()),
         struct_id(system_width), theLastBreakpoint(0), theStopBreakpoint(1) {
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicRegressionTracker].obj = (void *) this;
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicRegressionTracker].fn = (void *) &RegressionTrackerMagicBreakpoint;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicRegressionTracker].obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicRegressionTracker].fn = (void *) &RegressionTrackerMagicBreakpoint;
 
     // DBG_Assert(false, (<< "Function not supported"));
     /*
@@ -883,8 +883,8 @@ public:
   }
 
   SimPrintHandlerImpl() {
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicSimPrintHandler].obj = (void *) this;
-    Flexus::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicSimPrintHandler].fn = (void *) &SimPrintHandlerMagicBreakpoint;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicSimPrintHandler].obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.magic_inst[Flexus::Qemu::API::MagicSimPrintHandler].fn = (void *) &SimPrintHandlerMagicBreakpoint;
   }
 };
 
@@ -985,8 +985,8 @@ public:
         theServerTxData("sys-ServerTxData") {
     theNetwork = Qemu::API::QEMU_get_ethernet();
     if (theNetwork != 0) {
-      Flexus::qflex_sim_callbacks.ethernet_frame.obj = (void *) this;
-      Flexus::qflex_sim_callbacks.ethernet_frame.fn = (void *) &PacketTrackerEthernetFrame;
+      Flexus::Qemu::API::qflex_sim_callbacks.ethernet_frame.obj = (void *) this;
+      Flexus::Qemu::API::qflex_sim_callbacks.ethernet_frame.fn = (void *) &PacketTrackerEthernetFrame;
     }
   }
 };
@@ -1015,8 +1015,8 @@ public:
   }
 
   ConsoleStringTrackerImpl() {
-    Flexus::qflex_sim_callbacks.xterm_break_string.obj = (void *) this;
-    Flexus::qflex_sim_callbacks.xterm_break_string.fn = (void *) &ConsoleStringTrackerXTermString;
+    Flexus::Qemu::API::qflex_sim_callbacks.xterm_break_string.obj = (void *) this;
+    Flexus::Qemu::API::qflex_sim_callbacks.xterm_break_string.fn = (void *) &ConsoleStringTrackerXTermString;
   }
 };
 

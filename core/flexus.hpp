@@ -56,11 +56,8 @@ void CreateFlexusObject();
 // Interface to QEMU
 void flexusInit(int nb_cores, const char *config_file);
 void flexusStop();
-void flexusStartTiming();
-void flexusQMP(Qemu::API::qmp_flexus_cmd_t aCMD, const char *args);
 
 // Flexus 
-
 class FlexusInterface {
 public:
   // Initialization functions
@@ -148,30 +145,7 @@ extern FlexusInterface *theFlexus;
 
 } // End Namespace Core
 
-// QEMU to QFlex callbacks for Trace mode
-typedef struct callback_t {
-  void *obj;
-  void *fn;
-} callback_t;
 
-typedef struct qflex_sim_callbacks_t {
-  callback_t *trace_mem;
-  callback_t trace_mem_dma;
-  callback_t periodic;
-  callback_t ethernet_frame;
-  callback_t xterm_break_string;
-  callback_t magic_inst[Qemu::API::MagicInstsTotalHooks];
-} qflex_sim_callbacks_t;
-
-extern qflex_sim_callbacks_t qflex_sim_callbacks;
-
-typedef void (*QFLEX_SIM_CALLBACK_PERIODIC)(void *);
-typedef void (*QFLEX_SIM_CALLBACK_TRACE_MEM)(void *, Qemu::API::memory_transaction_t *);
-typedef void (*QFLEX_SIM_CALLBACK_TRACE_MEM_DMA)(void *, Qemu::API::memory_transaction_t *);
-typedef void (*QFLEX_SIM_CALLBACK_MAGIC_INST)(void *, int, long long);
-typedef void (*QFLEX_SIM_CALLBACK_ETHERNET_FRAME)(void *, int32_t, int32_t, long long);
-typedef void (*QFLEX_SIM_CALLBACK_XTERM_BREAK_STRING)(void *, char *);
-	
 } // namespace Flexus
 
 #endif // FLEXUS_CORE_FLEXUS_HPP__INCLUDED

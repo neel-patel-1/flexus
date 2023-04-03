@@ -649,7 +649,7 @@ public:
   }
 
   void enableInstructionTracing() {
-    DBG_Assert(false, (<< "Instruction Tracing not supported"));
+    // DBG_Assert(false, (<< "Enabling instruction tracing is done by default"));
   }
 
 private:
@@ -684,10 +684,10 @@ private:
     //    registerTimingInterface(&theTracers[ii]);
 
     // Register memory interface: Insert QEMU callbacks for instruction fetch and data access
-    Flexus::qflex_sim_callbacks.trace_mem = new Flexus::callback_t[theNumCPUs];
+    Flexus::Qemu::API::qflex_sim_callbacks.trace_mem = new Flexus::Qemu::API::callback_t[theNumCPUs];
     for (int i = 0; i < theNumCPUs; i++) {
-      Flexus::qflex_sim_callbacks.trace_mem[i].obj = (void *) (theTracers + i);
-      Flexus::qflex_sim_callbacks.trace_mem[i].fn = (void *) &TraceMemHierOperate;
+      Flexus::Qemu::API::qflex_sim_callbacks.trace_mem[i].obj = (void *) (theTracers + i);
+      Flexus::Qemu::API::qflex_sim_callbacks.trace_mem[i].fn = (void *) &TraceMemHierOperate;
     }
   }
 
@@ -703,8 +703,8 @@ private:
 
     // Register DMA interface: Insert QEMU callbacks for DMA accesses
     for (int i = 0; i < theNumCPUs; i++) {
-      Flexus::qflex_sim_callbacks.trace_mem_dma.obj = (void *) &theDMATracer;
-      Flexus::qflex_sim_callbacks.trace_mem_dma.fn = (void *) &DMAMemHierOperate;
+      Flexus::Qemu::API::qflex_sim_callbacks.trace_mem_dma.obj = (void *) &theDMATracer;
+      Flexus::Qemu::API::qflex_sim_callbacks.trace_mem_dma.fn = (void *) &DMAMemHierOperate;
     }
   }
 };

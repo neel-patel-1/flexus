@@ -42,10 +42,63 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  DO-NOT-REMOVE end-copyright-block
+#include <core/debug/debug.hpp>
+#include <core/flexus.hpp>
+
 namespace Flexus {
 namespace Qemu {
 namespace API {
 #include "api.h"
+
+static void qflex_sim_callbacks_start_timing(void) {
+  DBG_Assert(qflex_sim_callbacks.start_timing.fn != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_START_TIMING) qflex_sim_callbacks.start_timing.fn)();
+}
+
+static void qflex_sim_callbacks_sim_quit(void) {
+  DBG_Assert(qflex_sim_callbacks.sim_quit.fn != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_SIM_QUIT) qflex_sim_callbacks.sim_quit.fn)();
+}
+
+static void qflex_sim_callbacks_qmp(qmp_flexus_cmd_t cmd, const char *args) {
+  DBG_Assert(qflex_sim_callbacks.qmp.fn != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_QMP) qflex_sim_callbacks.qmp.fn)(cmd, args);
+}
+
+static void qflex_sim_callbacks_periodic(void) {
+  DBG_Assert(qflex_sim_callbacks.periodic.fn != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_PERIODIC) qflex_sim_callbacks.periodic.fn)(qflex_sim_callbacks.periodic.obj);
+}
+
+void qflex_sim_callbacks_trace_mem(int cpu_index, memory_transaction_t *mem_trans) {
+  DBG_Assert(qflex_sim_callbacks.trace_mem != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_TRACE_MEM) qflex_sim_callbacks.trace_mem[cpu_index].fn)(qflex_sim_callbacks.trace_mem[cpu_index].obj, mem_trans);
+}
+
+void qflex_sim_callbacks_trace_mem_dma(memory_transaction_t *mem_trans) {
+  DBG_Assert(qflex_sim_callbacks.trace_mem_dma.obj != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_TRACE_MEM_DMA) qflex_sim_callbacks.trace_mem_dma.fn)(qflex_sim_callbacks.trace_mem_dma.obj, mem_trans);
+}
+
+void qflex_sim_callbacks_magic_inst(int cpu_index, long long aBreakpoint) {
+  for (int type = 0; type < MagicInstsTotalHooks; type++) {
+    if(qflex_sim_callbacks.magic_inst[type].obj != NULL){
+      ((QFLEX_SIM_CALLBACK_MAGIC_INST) qflex_sim_callbacks.magic_inst[type].fn)(qflex_sim_callbacks.magic_inst[type].obj, cpu_index, aBreakpoint);
+    } else {
+      DBG_(Crit, (<< "Callback was never intialized but still was called"));
+    }
+  }
+}
+
+void qflex_sim_callbacks_ethernet_frame(int32_t aNetworkID, int32_t aFrameType, long long aTimestamp) {
+  DBG_Assert(qflex_sim_callbacks.ethernet_frame.obj != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_ETHERNET_FRAME) qflex_sim_callbacks.ethernet_frame.fn)(qflex_sim_callbacks.ethernet_frame.obj, aNetworkID, aFrameType, aTimestamp);
+}
+
+void qflex_sim_callbacks_xterm_break_string(char *aString) {
+  DBG_Assert(qflex_sim_callbacks.xterm_break_string.obj != NULL, (<< "Callback was never intialized but still was called"));
+  ((QFLEX_SIM_CALLBACK_XTERM_BREAK_STRING) qflex_sim_callbacks.xterm_break_string.fn)(qflex_sim_callbacks.xterm_break_string.obj, aString);
+}
 
 QEMU_GET_ETHERNET_PROC QEMU_get_ethernet = nullptr;
 QEMU_CLEAR_EXCEPTION_PROC QEMU_clear_exception = nullptr;
@@ -145,6 +198,38 @@ void QFLEX_API_set_Interface_Hooks(const QFLEX_API_Interface_Hooks_t *hooks) {
   // Msutherl: MMU hooks
   //  QEMU_get_mmu_state= hooks->QEMU_get_mmu_state;
 }
+
+void QEMU_API_get_Interface_Hooks (FLEXUS_SIM_DYNLIB_CALLBACK_t* hooks) {
+  hooks->start_timing = &qflex_sim_callbacks_start_timing;
+  hooks->sim_quit = &qflex_sim_callbacks_sim_quit;
+  hooks->qmp = &qflex_sim_callbacks_qmp;
+  hooks->trace_mem = &qflex_sim_callbacks_trace_mem;
+  hooks->trace_mem_dma = &qflex_sim_callbacks_trace_mem_dma;
+  hooks->periodic = &qflex_sim_callbacks_periodic;
+  hooks->magic_inst = &qflex_sim_callbacks_magic_inst;
+  hooks->ethernet_frame = &qflex_sim_callbacks_ethernet_frame;
+  hooks->xterm_break_string = &qflex_sim_callbacks_xterm_break_string;
+}
+
+qflex_sim_callbacks_t qflex_sim_callbacks = 
+{
+  .start_timing = {NULL, NULL, },
+  .sim_quit = {NULL, NULL, },
+  .qmp = {NULL, NULL, },
+  .trace_mem = NULL,
+  .trace_mem_dma = {NULL, NULL, },
+  .periodic = {NULL, NULL, },
+  .ethernet_frame = {NULL, NULL, },
+  .xterm_break_string = { NULL, NULL, },
+  .magic_inst = {
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+    {NULL, NULL}, 
+  },
+};
 
 } // namespace API
 } // namespace Qemu
