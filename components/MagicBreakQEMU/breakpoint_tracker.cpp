@@ -983,7 +983,8 @@ public:
         thePort(aSrcPortNumber), thePackets("sys-Packets"),
         thePackets_ClientToServer("sys-Packets:C2S"), thePackets_ServerToClient("sys-Packets:S2C"),
         theServerTxData("sys-ServerTxData") {
-    theNetwork = Qemu::API::qemu_callbacks.QEMU_get_ethernet();
+    // TODO: Not supported
+    theNetwork = NULL;
     if (theNetwork != 0) {
       Flexus::Qemu::API::qflex_sim_callbacks.ethernet_frame.obj = (void *) this;
       Flexus::Qemu::API::qflex_sim_callbacks.ethernet_frame.fn = (void *) &PacketTrackerEthernetFrame;

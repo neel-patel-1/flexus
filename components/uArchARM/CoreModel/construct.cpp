@@ -426,9 +426,6 @@ uint32_t CoreImpl::getPSTATE() {
 void CoreImpl::setPSTATE(uint32_t aPSTATE) {
   thePSTATE = aPSTATE;
 }
-uint64_t CoreImpl::getTPIDR(uint8_t anEL) {
-  return Flexus::Qemu::Processor::getProcessor(theNode)->readTPIDR(anEL);
-}
 void CoreImpl::setFPSR(uint64_t anFPSR) {
   theFPSR.set(anFPSR);
 }
@@ -458,9 +455,6 @@ void CoreImpl::setHCREL2(uint64_t aHCREL2) {
 }
 uint64_t CoreImpl::getHCREL2() {
   return theHCR_EL2;
-}
-void CoreImpl::setException(Flexus::Qemu::API::exception_t anEXP) {
-  theEXP = anEXP;
 }
 Flexus::Qemu::API::exception_t CoreImpl::getException() {
   return theEXP;

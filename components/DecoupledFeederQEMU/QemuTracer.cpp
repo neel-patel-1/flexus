@@ -198,8 +198,6 @@ public:
     theUserStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-User:");
     theOSStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-OS:");
     theBothStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-");
-    API::conf_object_t *thePhysMemory = API::qemu_callbacks.QEMU_get_phys_mem(theCPU);
-    theTimingModels.insert(thePhysMemory);
 
 #if FLEXUS_TARGET_IS(v9)
     thePhysIO = 0;

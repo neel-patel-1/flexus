@@ -947,20 +947,12 @@ struct uArchARM {
   virtual void setPSTATE(uint32_t aPSTATE) {
     DBG_Assert(false);
   }
-  virtual uint64_t getTPIDR(uint8_t anEL) {
-    DBG_Assert(false);
-    return 0;
-  }
   virtual uint64_t getFPSR() {
     DBG_Assert(false);
     return 0;
   }
   virtual void setFPSR(uint64_t aValue) {
     DBG_Assert(false);
-  }
-  virtual uint64_t getFPCR() {
-    DBG_Assert(false);
-    return 0;
   }
   virtual void setFPCR(uint64_t aValue) {
     DBG_Assert(false);
@@ -998,9 +990,6 @@ struct uArchARM {
     return false;
   }
   virtual void setAARCH64(bool aMode) {
-    DBG_Assert(false);
-  }
-  virtual void setException(Flexus::Qemu::API::exception_t anEXP) {
     DBG_Assert(false);
   }
   virtual void setDAIF(uint32_t aDAIF) {

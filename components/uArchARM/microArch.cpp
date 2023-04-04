@@ -347,7 +347,7 @@ public:
       theAvailableROB = theCore->availableROB();
 
       eExceptionType interrupt =
-          theCPU->getPendingInterrupt() == 0 ? kException_None : kException_IRQ;
+          theCPU->hasPendingIrq() ? kException_IRQ : kException_None;
       theCore->cycle(interrupt);
 
     } catch (ResynchronizeWithQemuException &e) {
@@ -454,15 +454,6 @@ private:
     theCore->setRoundingMode((fpsr >> 30) & 3);
   }
 
-  void resetAARCH64() {
-    bool aarch64 = theCPU->readAARCH64();
-    theCore->setAARCH64(aarch64);
-  }
-
-  //  void resetDCZID_EL0() {
-  //      theCore->setDCZID_EL0(theCPU->readDCZID_EL0());
-  //  }
-
   void resetSP_el() {
     for (uint8_t i = 0; i < 4; i++) {
       uint64_t sp = theCPU->readSP_el(i);
@@ -474,16 +465,6 @@ private:
     uint64_t pstate = theCPU->readPSTATE();
     theCore->setPSTATE(pstate);
     theCore->initializeRegister(ccReg(0), pstate);
-  }
-
-  void resetException() {
-    API::exception_t exp;
-    theCPU->readException(&exp);
-    theCore->setException(exp);
-  }
-
-  void resetHCREL2() {
-    theCore->setHCREL2(theCPU->readHCREL2());
   }
 
   void resetSCTLR_EL() {

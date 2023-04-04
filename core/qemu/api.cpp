@@ -106,9 +106,8 @@ void qflex_sim_callbacks_xterm_break_string(char *aString) {
 // QEMU_GET_MMU_STATE_PROC QEMU_get_mmu_state= nullptr;
 QFLEX_TO_QEMU_API_t qemu_callbacks = 
 {
-  .QEMU_get_ethernet = nullptr,
   .QEMU_clear_exception = nullptr,
-  .QEMU_get_pending_interrupt = nullptr,
+  .QEMU_has_pending_irq = nullptr,
 
   .QEMU_write_register = nullptr,
   .QEMU_read_register = nullptr,
@@ -116,15 +115,11 @@ QFLEX_TO_QEMU_API_t qemu_callbacks =
   .QEMU_read_pstate = nullptr,
   .QEMU_read_fpcr = nullptr,
   .QEMU_read_fpsr = nullptr,
-  .QEMU_read_exception = nullptr,
   .QEMU_read_sctlr = nullptr,
-  .QEMU_read_tpidr = nullptr,
-  .QEMU_read_hcr_el2 = nullptr,
   .QEMU_cpu_has_work = nullptr,
   .QEMU_read_sp_el = nullptr,
 
   .QEMU_read_phys_memory = nullptr,
-  .QEMU_get_phys_mem = nullptr,
   .QEMU_get_cpu_by_index = nullptr,
   .QEMU_get_cpu_index = nullptr,
   .QEMU_step_count = nullptr,
@@ -155,32 +150,25 @@ QFLEX_TO_QEMU_API_t qemu_callbacks =
   .QEMU_disassemble = nullptr,
   .QEMU_dump_state = nullptr,
 
-  .QEMU_read_DCZID_EL0 = nullptr,
-  .QEMU_read_AARCH64 = nullptr,
   .QEMU_cpu_set_quantum = nullptr,
   .QEMU_increment_debug_stat = nullptr,
 };
 
 void QFLEX_API_set_Interface_Hooks(const QFLEX_TO_QEMU_API_t *hooks) {
-  qemu_callbacks.QEMU_get_ethernet                   = hooks->QEMU_get_ethernet;
   qemu_callbacks.QEMU_clear_exception                = hooks->QEMU_clear_exception;
-  qemu_callbacks.QEMU_get_pending_interrupt          = hooks->QEMU_get_pending_interrupt;
- ;
+  qemu_callbacks.QEMU_has_pending_irq                = hooks->QEMU_has_pending_irq;
+
   qemu_callbacks.QEMU_write_register                 = hooks->QEMU_write_register;
   qemu_callbacks.QEMU_read_register                  = hooks->QEMU_read_register;
   qemu_callbacks.QEMU_read_unhashed_sysreg           = hooks->QEMU_read_unhashed_sysreg;
   qemu_callbacks.QEMU_read_pstate                    = hooks->QEMU_read_pstate;
   qemu_callbacks.QEMU_read_fpcr                      = hooks->QEMU_read_fpcr;
   qemu_callbacks.QEMU_read_fpsr                      = hooks->QEMU_read_fpsr;
-  qemu_callbacks.QEMU_read_exception                 = hooks->QEMU_read_exception;
   qemu_callbacks.QEMU_read_sctlr                     = hooks->QEMU_read_sctlr;
-  qemu_callbacks.QEMU_read_tpidr                     = hooks->QEMU_read_tpidr;
-  qemu_callbacks.QEMU_read_hcr_el2                   = hooks->QEMU_read_hcr_el2;
   qemu_callbacks.QEMU_cpu_has_work                   = hooks->QEMU_cpu_has_work;
   qemu_callbacks.QEMU_read_sp_el                     = hooks->QEMU_read_sp_el;
  
   qemu_callbacks.QEMU_read_phys_memory               = hooks->QEMU_read_phys_memory;
-  qemu_callbacks.QEMU_get_phys_mem                   = hooks->QEMU_get_phys_mem;
   qemu_callbacks.QEMU_get_cpu_by_index               = hooks->QEMU_get_cpu_by_index;
   qemu_callbacks.QEMU_get_cpu_index                  = hooks->QEMU_get_cpu_index;
   qemu_callbacks.QEMU_step_count                     = hooks->QEMU_step_count;
@@ -211,8 +199,6 @@ void QFLEX_API_set_Interface_Hooks(const QFLEX_TO_QEMU_API_t *hooks) {
   qemu_callbacks.QEMU_disassemble                    = hooks->QEMU_disassemble;
   qemu_callbacks.QEMU_dump_state                     = hooks->QEMU_dump_state;
 
-  qemu_callbacks.QEMU_read_DCZID_EL0                 = hooks->QEMU_read_DCZID_EL0;
-  qemu_callbacks.QEMU_read_AARCH64                   = hooks->QEMU_read_AARCH64;
   qemu_callbacks.QEMU_cpu_set_quantum                = hooks->QEMU_cpu_set_quantum;
   qemu_callbacks.QEMU_increment_debug_stat           = hooks->QEMU_increment_debug_stat;
   // Msutherl: MMU hooks

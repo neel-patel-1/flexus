@@ -140,9 +140,6 @@ public:
   virtual void reset(uArchARM *aCore) override {
     DBG_Assert(false);
   } // FIXME /*arm_cp_reset_ignore*/
-  virtual uint64_t readfn(uArchARM *aCore) override {
-    return aCore->getTPIDR(0);
-  }
   TPIDR_EL0_()
       : SysRegInfo("TPIDR_EL0_", TPIDR_EL0_::state, TPIDR_EL0_::type, TPIDR_EL0_::opc0,
                    TPIDR_EL0_::opc1, TPIDR_EL0_::opc2, TPIDR_EL0_::crn, TPIDR_EL0_::crm,
@@ -169,14 +166,6 @@ public:
     return kACCESS_OK; // MARK: This is RW-allowed from every exception level
   }
 
-  // TODO: This models a single, non-renameable FPSR/FPCR. Will resync
-  // with QEMU often since many of the fields are written per-instruction.
-  virtual uint64_t readfn(uArchARM *aCore) override {
-    return aCore->getFPCR();
-  } // /*aa64_fpcr_read*/
-  virtual void writefn(uArchARM *aCore, uint64_t aVal) override {
-    aCore->setFPCR(aVal);
-  } // /*aa64_fpcr_write*/
   FPCR_()
       : SysRegInfo("FPCR_", FPCR_::state, FPCR_::type, FPCR_::opc0, FPCR_::opc1, FPCR_::opc2,
                    FPCR_::crn, FPCR_::crm, FPCR_::access) {
@@ -229,9 +218,6 @@ public:
   static const eRegInfo type = kARM_NO_RAW;
   uint64_t resetvalue = -1;
 
-  virtual uint64_t readfn(uArchARM *aCore) override {
-    return aCore->readDCZID_EL0();
-  }
   DCZID_EL0_()
       : SysRegInfo("DCZID_EL0_", DCZID_EL0_::state, DCZID_EL0_::type, DCZID_EL0_::opc0,
                    DCZID_EL0_::opc1, DCZID_EL0_::opc2, DCZID_EL0_::crn, DCZID_EL0_::crm,

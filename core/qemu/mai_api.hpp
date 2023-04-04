@@ -137,20 +137,21 @@ public:
   }
 
   std::string disassemble(VirtualMemoryAddress const &anAddress) const {
-    API::logical_address_t addr(anAddress);
-    char *buffer = API::qemu_callbacks.QEMU_disassemble(*this, addr);
+    API::logical_address_t pc(anAddress);
+    char *log_buf = new char[2048];
+    char *buffer = API::qemu_callbacks.QEMU_disassemble(*this, pc, &log_buf);
     char *buffer_dup = (char *)buffer;
     while (buffer_dup[0] != '\n') {
       buffer_dup++;
     }
-    buffer_dup[0] = '\0';
+    buffer_dup[0] = '\0'; // Insert string termination
     std::string s(buffer);
-    free(buffer); // qemu called "malloc" for this area
+    delete log_buf;
     return s;
   }
 
   std::string dump_state() const {
-    char *buf = new char[716];
+    char *buf = new char[2048];
     API::qemu_callbacks.QEMU_dump_state(*this, &buf);
     std::string s(buf);
     delete buf;
@@ -181,40 +182,20 @@ public:
     return API::qemu_callbacks.QEMU_read_sp_el(anId, *this);
   }
 
-  uint32_t readDCZID_EL0() const {
-    return API::qemu_callbacks.QEMU_read_DCZID_EL0(*this);
-  }
-
-  uint32_t readAARCH64() const {
-    return API::qemu_callbacks.QEMU_read_AARCH64(*this);
-  }
-
-  void readException(API::exception_t *exp) const {
-    return API::qemu_callbacks.QEMU_read_exception(*this, exp);
-  }
-
-  uint64_t getPendingInterrupt() const {
-    return API::qemu_callbacks.QEMU_get_pending_interrupt(*this);
+  bool hasPendingIrq() const {
+    return API::qemu_callbacks.QEMU_has_pending_irq(*this);
   }
 
   uint64_t readSCTLR(uint8_t id) const {
     return API::qemu_callbacks.QEMU_read_sctlr(id, *this);
   }
 
-  uint64_t readTPIDR(uint8_t id) const {
-    return API::qemu_callbacks.QEMU_read_tpidr(id, *this);
-  }
-
-  uint64_t readHCREL2() const {
-    return API::qemu_callbacks.QEMU_read_hcr_el2(*this);
-  }
-
   uint32_t readFPCR() const {
-    return API::qemu_callbacks.QEMU_read_fpcr(*this);
+    return API::qemu_callbacks.QEMU_read_unhashed_sysreg(*this, 3, 3, 0, 4, 4);
   }
 
   uint32_t readFPSR() const {
-    return API::qemu_callbacks.QEMU_read_fpsr(*this);
+    return API::qemu_callbacks.QEMU_read_unhashed_sysreg(*this, 3, 3, 1, 4, 4);
   }
 
   bool hasWork() const {
