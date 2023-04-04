@@ -169,13 +169,13 @@ public:
       os_dtlb_stats[i] = new MMUStats(boost::padded_string_cast<2, '0'>(i) + "-dtlb-OS:");
       user_itlb_stats[i] = new MMUStats(boost::padded_string_cast<2, '0'>(i) + "-itlb-User:");
       user_dtlb_stats[i] = new MMUStats(boost::padded_string_cast<2, '0'>(i) + "-dtlb-User:");
-      theLastICounts[i] = Qemu::API::QEMU_get_instruction_count(i, BOTH_INSTR);
+      theLastICounts[i] = Qemu::API::qemu_callbacks.QEMU_get_instruction_count(i, BOTH_INSTR);
     }
 
     theFlexus->advanceCycles(0);
     theCMPWidth = cfg.CMPWidth;
     if (theCMPWidth == 0) {
-      theCMPWidth = Qemu::API::QEMU_get_num_cores();
+      theCMPWidth = Qemu::API::qemu_callbacks.QEMU_get_num_cores();
     }
 
     // Insert periodic callback
@@ -277,7 +277,7 @@ public:
     // Count instructions
     // FIXME Currently Does nothing since step_count ha not been implemented
     for (int32_t i = 0; i < theNumCPUs; ++i) {
-      int64_t temp = Qemu::API::QEMU_get_instruction_count(i, BOTH_INSTR);
+      int64_t temp = Qemu::API::qemu_callbacks.QEMU_get_instruction_count(i, BOTH_INSTR);
       *(theICounts[i]) += temp - theLastICounts[i];
       theLastICounts[i] = temp;
     }

@@ -82,7 +82,7 @@ public:
   void OnMagicBreakpoint(int cpu_index, uint64_t aBreakpoint) {
 
 #if FLEXUS_TARGET_IS(x86)
-    int64_t pc = Qemu::API::QEMU_get_program_counter(aCpu);
+    int64_t pc = Qemu::API::qemu_callbacks.QEMU_get_program_counter(aCpu);
     Flexus::Qemu::Processor cpu = Flexus::Qemu::Processor(aCpu);
 
     int64_t addr = int64_t(cpu->translateVirtualAddress(VirtualMemoryAddress(pc)) + 5);
@@ -213,7 +213,7 @@ public:
   void OnMagicBreakpoint(int cpu_index, uint64_t aBreakpoint) {
 
 #if FLEXUS_TARGET_IS(x86)
-    int64_t pc = Qemu::API::QEMU_get_program_counter(aCpu);
+    int64_t pc = Qemu::API::qemu_callbacks.QEMU_get_program_counter(aCpu);
     Flexus::Qemu::Processor cpu = Flexus::Qemu::Processor(aCpu);
 
     int64_t addr = int64_t(cpu->translateVirtualAddress(VirtualMemoryAddress(pc)) + 5);
@@ -403,7 +403,7 @@ public:
   void OnMagicBreakpoint(int cpu_index, long long aBreakpoint) {
 
 #if FLEXUS_TARGET_IS(x86)
-    int64_t pc = Qemu::API::QEMU_get_program_counter(aCpu);
+    int64_t pc = Qemu::API::qemu_callbacks.QEMU_get_program_counter(aCpu);
     Flexus::Qemu::Processor cpu = Flexus::Qemu::Processor(aCpu);
 
     int64_t addr = int64_t(cpu->translateVirtualAddress(VirtualMemoryAddress(pc)) + 5);
@@ -539,9 +539,9 @@ struct web_version1 {
 using Flexus::SharedTypes::VirtualMemoryAddress;
 // Helperfunction to read Vadddresses
 char readVirtualAddress(Qemu::API::conf_object_t *cpu, VirtualMemoryAddress anAddr, int size) {
-  uint64_t addr = Qemu::API::QEMU_logical_to_physical(cpu, Qemu::API::QEMU_DI_Data, anAddr);
+  uint64_t addr = Qemu::API::qemu_callbacks.QEMU_logical_to_physical(cpu, Qemu::API::QEMU_DI_Data, anAddr);
   uint8_t *buf = new uint8_t[size];
-  Qemu::API::QEMU_read_phys_memory(buf, addr, size);
+  Qemu::API::qemu_callbacks.QEMU_read_phys_memory(buf, addr, size);
   char ret = buf[0];
   delete[] buf;
   return ret;
@@ -550,15 +550,15 @@ char readVirtualAddress(Qemu::API::conf_object_t *cpu, VirtualMemoryAddress anAd
 // char readVAddr2(Qemu::API::conf_object_t *cpu, VirtualMemoryAddress anAddr,
 // int asi, int size){
 //    //TODO implement correctly, currently doesn't do anything with ASI which
-//    is wrong return (char)(Qemu::API::QEMU_read_phys_memory(
-//            Qemu::API::QEMU_logical_to_physical(cpu, Qemu::API::QEMU_DI_Data
+//    is wrong return (char)(Qemu::API::qemu_callbacks.QEMU_read_phys_memory(
+//            Qemu::API::qemu_callbacks.QEMU_logical_to_physical(cpu, Qemu::API::QEMU_DI_Data
 //            ,anAddr)
 //            ,size)[0]);
 //}
 
 // FIXME: make a proper x86 variant
 uint64_t readG(Qemu::API::conf_object_t *cpu, int reg) {
-  return Qemu::API::QEMU_read_register(cpu, Qemu::API::kGENERAL, reg);
+  return Qemu::API::qemu_callbacks.QEMU_read_register(cpu, Qemu::API::kGENERAL, reg);
 }
 
 class SimPrintHandlerImpl : public SimPrintHandler {
@@ -793,7 +793,7 @@ public:
       VirtualMemoryAddress file_addr = VirtualMemoryAddress(readG(aCpu, 3));
       uint64_t line = readG(aCpu, 4);
       uint64_t value = readG(aCpu, 5);
-      VirtualMemoryAddress pc = (VirtualMemoryAddress)Qemu::API::QEMU_get_program_counter(aCpu);
+      VirtualMemoryAddress pc = (VirtualMemoryAddress)Qemu::API::qemu_callbacks.QEMU_get_program_counter(aCpu);
       char fn[256];
       char file[256];
       readString(aCpu, fn_addr, fn, sizeof(fn));
@@ -983,7 +983,7 @@ public:
         thePort(aSrcPortNumber), thePackets("sys-Packets"),
         thePackets_ClientToServer("sys-Packets:C2S"), thePackets_ServerToClient("sys-Packets:S2C"),
         theServerTxData("sys-ServerTxData") {
-    theNetwork = Qemu::API::QEMU_get_ethernet();
+    theNetwork = Qemu::API::qemu_callbacks.QEMU_get_ethernet();
     if (theNetwork != 0) {
       Flexus::Qemu::API::qflex_sim_callbacks.ethernet_frame.obj = (void *) this;
       Flexus::Qemu::API::qflex_sim_callbacks.ethernet_frame.fn = (void *) &PacketTrackerEthernetFrame;

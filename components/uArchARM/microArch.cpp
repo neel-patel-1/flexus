@@ -160,7 +160,7 @@ public:
     for (int i = 0; i < MAX_CLIENT_SIZE; i++) {
       std::string cpu = "cpu" + std::to_string(i);
       Flexus::Qemu::API::conf_object_t *client =
-          Flexus::Qemu::API::QEMU_get_object_by_name(cpu.c_str());
+          Flexus::Qemu::API::qemu_callbacks.QEMU_get_object_by_name(cpu.c_str());
       if (!client) {
         break;
       }

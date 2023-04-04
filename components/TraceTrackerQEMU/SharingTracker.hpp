@@ -260,7 +260,7 @@ public:
         statInvTagReplaceNoData("sys-SharingTracker-InvTagReplaceNoData") {
     theInvalidTags.resize(theNumNodes);
 
-    theCPU = Qemu::API::QEMU_get_cpu_by_index(0);
+    theCPU = Qemu::API::qemu_callbacks.QEMU_get_cpu_by_index(0);
     // No idea about how to do this
     //  if (!theCPU) {
     //  theCPU = Simics::API::SIM_get_object( "server_cpu0" );

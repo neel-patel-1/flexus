@@ -229,11 +229,11 @@ struct ValueTracker {
   void register_mem_iface(int vm) {
     DBG_(VVerb, (<< "Registering DMA tracker " << vm));
 
-    API::conf_object_t *dma_map_object = API::QEMU_get_object_by_name("dma_mem");
-    //    API::QEMU_clear_exception();
+    API::conf_object_t *dma_map_object =.QEMU_get_object_by_name("dma_mem");
+    //    API::qemu_callbacks.QEMU_clear_exception();
     if (!dma_map_object) {
       std::string dma_map_name = "dma_mem" + std::to_string(vm);
-      dma_map_object = API::QEMU_get_object_by_name(dma_map_name.c_str());
+      dma_map_object =.QEMU_get_object_by_name(dma_map_name.c_str());
     }
 
     DBG_(Crit, (<< "ALEX -- WARNING: DMA tracker has not been set up (Needs to "
@@ -246,10 +246,10 @@ struct ValueTracker {
           std::string cpu_name = "machine" + std::to_string(vm) + "_cpu0";
           std::string cpu_mem_name = cpu_name + "_mem";
           API::conf_object_t * cpu0_mem =
-       API::QEMU_get_object_by_name(cpu_mem_name.c_str()); API::conf_object_t *
-       cpu0 = API::QEMU_get_object_by_name(cpu_name.c_str()); if ((vm == 0) &&
-       (!cpu0_mem)){ cpu0_mem = API::QEMU_get_object_by_name("cpu0_mem"); cpu0 =
-       API::QEMU_get_object_by_name("cpu0");
+      API::qemu_callbacks.QEMU_get_object_by_name(cpu_mem_name.c_str()); API::conf_object_t *
+       cpu0 = API::qemu_callbacks.QEMU_get_object_by_name(cpu_name.c_str()); if ((vm == 0) &&
+       (!cpu0_mem)){ cpu0_mem = API::qemu_callbacks.QEMU_get_object_by_name("cpu0_mem"); cpu0 =
+      API::qemu_callbacks.QEMU_get_object_by_name("cpu0");
           }
 
           if ( ! cpu0_mem ) {
@@ -258,10 +258,10 @@ struct ValueTracker {
             //cpu_mem_name = "machine" + std::to_string(vm) +
        "_server_server_cpu0_mem"; cpu_mem_name = "server_machine" +
        std::to_string(vm) + "_server_cpu0_mem"; cpu0_mem =
-       API::QEMU_get_object_by_name(cpu_mem_name.c_str()); cpu0 =
-       API::QEMU_get_object_by_name(cpu_name.c_str()); if ((vm == 0) &&
-       (!cpu0_mem)){ cpu0_mem = API::QEMU_get_object_by_name("server_cpu0_mem");
-              cpu0 = API::QEMU_get_object_by_name("server_cpu0");
+      API::qemu_callbacks.QEMU_get_object_by_name(cpu_mem_name.c_str()); cpu0 =
+      API::qemu_callbacks.QEMU_get_object_by_name(cpu_name.c_str()); if ((vm == 0) &&
+       (!cpu0_mem)){ cpu0_mem = API::qemu_callbacks.QEMU_get_object_by_name("server_cpu0_mem");
+              cpu0 = API::qemu_callbacks.QEMU_get_object_by_name("server_cpu0");
             }
             DBG_Assert(cpu0_mem, ( << "Unable to connect DMA because there is no
        cpu0_mem"));

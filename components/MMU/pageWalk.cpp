@@ -87,7 +87,7 @@ void PageWalk::preWalk(TranslationTransport &aTranslation) {
 
   if (statefulPointer->currentLookupLevel == 0) {
     PhysicalMemoryAddress magicPaddr(
-        QEMU_logical_to_physical(*Flexus::Qemu::Processor::getProcessor(theNode),
+        Flexus::Qemu::API::qemu_callbacks.QEMU_logical_to_physical(*Flexus::Qemu::Processor::getProcessor(theNode),
                                  QEMU_DI_Instruction, basicPointer->theVaddr));
     DBG_(VVerb, (<< " QEMU Translated: " << std::hex << basicPointer->theVaddr << std::dec
                  << ", to: " << std::hex << magicPaddr << std::dec));

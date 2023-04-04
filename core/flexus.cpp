@@ -265,7 +265,7 @@ void FlexusImpl::advanceCycles(int64_t aCycleCount) {
       theSaveRequested = false;
       doSave(theSaveName);
     } else {
-      Qemu::API::QEMU_quit_simulation("ERROR: Flexus does not support pause, quitting instead.");
+      Qemu::API::qemu_callbacks.QEMU_quit_simulation("ERROR: Flexus does not support pause, quitting instead.");
       return;
     }
   }
@@ -725,7 +725,7 @@ void FlexusImpl::terminateSimulation() {
 #ifdef WRITE_ALL_MEASUREMENT_OUT
   writeMeasurement("all", "all.measurement.out");
 #endif
-  Flexus::Qemu::API::QEMU_quit_simulation("Simulation terminated by flexus.");
+  Flexus::Qemu::API::qemu_callbacks.QEMU_quit_simulation("Simulation terminated by flexus.");
 }
 
 class Flexus_Obj : public Flexus::Qemu::AddInObject<FlexusImpl> {
@@ -781,7 +781,7 @@ void flexusStop() {
 }
 
 static void flexusStartTiming() {
-  while (Qemu::API::QEMU_getCyclesLeft() > 1) {
+  while (Qemu::API::qemu_callbacks.QEMU_getCyclesLeft() > 1) {
     theFlexus->doCycle();
   }
   theFlexus->terminateSimulation();

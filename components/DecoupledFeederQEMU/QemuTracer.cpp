@@ -198,7 +198,7 @@ public:
     theUserStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-User:");
     theOSStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-OS:");
     theBothStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-");
-    API::conf_object_t *thePhysMemory = API::QEMU_get_phys_mem(theCPU);
+    API::conf_object_t *thePhysMemory = API::qemu_callbacks.QEMU_get_phys_mem(theCPU);
     theTimingModels.insert(thePhysMemory);
 
 #if FLEXUS_TARGET_IS(v9)
@@ -230,14 +230,14 @@ public:
 
 #if FLEXUS_TARGET_IS(v9) & 0
     uint64_t reg_content;
-    API::QEMU_read_register(theCPU, 46 /* kTL */, nullptr, &reg_content);
+    API::qemu_callbacks.QEMU_read_register(theCPU, 46 /* kTL */, nullptr, &reg_content);
     theMemoryMessage.tl() = reg_content;
 #else
     theMemoryMessage.tl() = 0;
 #endif
 
 #if FLEXUS_TARGET_IS(v9) & 0
-    uint32_t opcode = API::QEMU_read_phys_memory(theCPU, mem_trans->s.physical_address, 4);
+    uint32_t opcode = API::qemu_callbacks.QEMU_read_phys_memory(theCPU, mem_trans->s.physical_address, 4);
 #else
     uint32_t opcode = 0;
 #endif
@@ -280,7 +280,7 @@ public:
       // These stores update the data caches on hit, but do not allocate on
       // miss.  The best way to model these in
       theMemoryMessage.address() = PhysicalMemoryAddress(mem_trans->s.physical_address);
-      theMemoryMessage.pc() = VirtualMemoryAddress(API::QEMU_get_program_counter(theCPU));
+      theMemoryMessage.pc() = VirtualMemoryAddress(API::qemu_callbacks.QEMU_get_program_counter(theCPU));
       theMemoryMessage.priv() = IS_PRIV(mem_trans);
       theMemoryMessage.reqSize() = mem_trans->s.size;
       theMemoryMessage.type() = MemoryMessage::NonAllocatingStoreReq;
@@ -308,8 +308,8 @@ public:
       // Need to determine opcode, as this may be an RMW or CAS
       // record the opcode
       API::physical_address_t pc =
-          API::QEMU_logical_to_physical(theCPU, API::QEMU_DI_Instruction, mem_trans->s.pc);
-      uint32_t op_code = API::QEMU_read_phys_memory(pc, 4);
+          API::qemu_callbacks.QEMU_logical_to_physical(theCPU, API::QEMU_DI_Instruction, mem_trans->s.pc);
+      uint32_t op_code = API::qemu_callbacks.QEMU_read_phys_memory(pc, 4);
 
       // LDD(a)            is 11-- ---0 -001 1--- ---- ---- ---- ----
       // STD(a)            is 11-- ---0 -011 1--- ---- ---- ---- ----
@@ -456,19 +456,19 @@ public:
 
   // Useful debugging stuff for tracing every instruction
   void debugTransaction(Qemu::API::memory_transaction_t *mem_trans) {
-    API::logical_address_t pc_logical = API::QEMU_get_program_counter(theCPU);
+    API::logical_address_t pc_logical = API::qemu_callbacks.QEMU_get_program_counter(theCPU);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
     API::physical_address_t pc =
-        API::QEMU_logical_to_physical(theCPU, API::QEMU_DI_Instruction, pc_logical);
+        API::qemu_callbacks.QEMU_logical_to_physical(theCPU, API::QEMU_DI_Instruction, pc_logical);
     unsigned opcode = 0;
 
     DBG_(VVerb, SetNumeric((ScaffoldIdx)theIndex)(<< "Mem Hier Instr: " << opcode << " logical pc: "
                                                   << &std::hex << pc_logical << " pc: " << pc));
 #pragma GCC diagnostic pop
 
-    if (API::QEMU_mem_op_is_data(&mem_trans->s)) {
-      if (API::QEMU_mem_op_is_write(&mem_trans->s)) {
+    if (API::qemu_callbacks.QEMU_mem_op_is_data(&mem_trans->s)) {
+      if (API::qemu_callbacks.QEMU_mem_op_is_write(&mem_trans->s)) {
         DBG_(VVerb,
              SetNumeric((ScaffoldIdx)theIndex)(
                  << "  Write v@" << &std::hex << mem_trans->s.logical_address << " p@"
@@ -552,7 +552,7 @@ public:
 
     const int32_t k_no_stall = 0;
     // debugTransaction(mem_trans);
-    if (API::QEMU_mem_op_is_write(&mem_trans->s)) {
+    if (API::qemu_callbacks.QEMU_mem_op_is_write(&mem_trans->s)) {
       DBG_(Verb, (<< "DMA To Mem: " << std::hex << mem_trans->s.physical_address << std::dec
                   << " Size: " << mem_trans->s.size));
       theMemoryMessage.type() = MemoryMessage::WriteReq;
@@ -619,8 +619,8 @@ public:
     DBG_(Dev, (<< "Initializing QemuTracerManager."));
     theNumCPUs = aNumCPUs;
 
-    // Dump translation caches
-    //    Qemu::API::QEMU_flush_all_caches();
+    // Dump translation caches so that helpers get regenerated with new insertions
+    Qemu::API::qemu_callbacks.QEMU_flush_tb_cache();
 
     // Flexus::SharedTypes::MemoryMessage msg(MemoryMessage::LoadReq);
     // toL1D((int32_t) 0, msg);
@@ -637,8 +637,8 @@ public:
 
   void setSystemTick(double aTickFreq) {
     for (int32_t i = 0; i < theNumCPUs; ++i) {
-      API::conf_object_t *cpu = Qemu::API::QEMU_get_cpu_by_index(i);
-      API::QEMU_set_tick_frequency(cpu, aTickFreq);
+      API::conf_object_t *cpu = Qemu::API::qemu_callbacks.QEMU_get_cpu_by_index(i);
+      API::qemu_callbacks.QEMU_set_tick_frequency(cpu, aTickFreq);
     }
   }
 
@@ -672,7 +672,7 @@ private:
       }
       theTracers[ii] = tracer_factory.create(feeder_name);
 
-      API::conf_object_t *cpu = API::QEMU_get_cpu_by_index(ii);
+      API::conf_object_t *cpu = API::qemu_callbacks.QEMU_get_cpu_by_index(ii);
       theTracers[ii]->init(cpu, ii, toL1D, toL1I, toNAW,
                            //			  , theWhiteBoxDebug
                            //			  , theWhiteBoxPeriod

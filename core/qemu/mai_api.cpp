@@ -80,8 +80,8 @@ namespace Qemu {
 // ProcessorMapper::ProcessorMapper() {
 //  // Find the Processors, Find All of them
 
-//  int proc_count = API::QEMU_get_num_cores();
-//  API::conf_object_t *proc_list = API::QEMU_get_all_cpus();
+//  int proc_count = qemu_callbacks.QEMU_get_num_cores();
+//  API::conf_object_t *proc_list = qemu_callbacks.QEMU_get_all_cpus();
 //  std::vector<cpu_desc_t> cpu_list;
 //  int num_flexus_cpus = 0;
 //  int num_client_cpus = proc_count;
@@ -95,7 +95,7 @@ namespace Qemu {
 
 //  for (int i = 0; i < proc_count; i++) {
 //    API::conf_object_t * cpu = &(proc_list[i]);
-//    int qemu_id = API::QEMU_get_cpu_index(cpu);
+//    int qemu_id = qemu_callbacks.QEMU_get_cpu_index(cpu);
 //    DBG_(VVerb, ( << "Processor " << i << ": " << cpu->name << " - CPU " <<
 //    qemu_id ));
 

@@ -123,9 +123,9 @@ protected:
       : theProcessor(aProcessor),
         theProcessorNumber(
             aProcessor
-                ? /*ProcessorMapper::mapProcNum2FlexusIndex(*/ API::QEMU_get_cpu_index(aProcessor)
+                ? /*ProcessorMapper::mapProcNum2FlexusIndex(*/ API::qemu_callbacks.QEMU_get_cpu_index(aProcessor)
                 : 0),
-        theQEMUProcessorNumber(aProcessor ? API::QEMU_get_cpu_index(aProcessor) : 0) {
+        theQEMUProcessorNumber(aProcessor ? API::qemu_callbacks.QEMU_get_cpu_index(aProcessor) : 0) {
   }
 
 public:
@@ -138,7 +138,7 @@ public:
 
   std::string disassemble(VirtualMemoryAddress const &anAddress) const {
     API::logical_address_t addr(anAddress);
-    char *buffer = API::QEMU_disassemble(*this, addr);
+    char *buffer = API::qemu_callbacks.QEMU_disassemble(*this, addr);
     char *buffer_dup = (char *)buffer;
     while (buffer_dup[0] != '\n') {
       buffer_dup++;
@@ -151,7 +151,7 @@ public:
 
   std::string dump_state() const {
     char *buf = new char[716];
-    API::QEMU_dump_state(*this, &buf);
+    API::qemu_callbacks.QEMU_dump_state(*this, &buf);
     std::string s(buf);
     delete buf;
     return s;
@@ -162,74 +162,74 @@ public:
   }
 
   VirtualMemoryAddress getPC() const {
-    return VirtualMemoryAddress(API::QEMU_get_program_counter(*this));
+    return VirtualMemoryAddress(API::qemu_callbacks.QEMU_get_program_counter(*this));
   }
 
   uint64_t readXRegister(int anIndex) const {
-    return API::QEMU_read_register(*this, API::kGENERAL, anIndex);
+    return API::qemu_callbacks.QEMU_read_register(*this, API::kGENERAL, anIndex);
   }
 
   uint64_t readVRegister(int anIndex) const {
-    return API::QEMU_read_register(*this, API::kFLOATING_POINT, anIndex);
+    return API::qemu_callbacks.QEMU_read_register(*this, API::kFLOATING_POINT, anIndex);
   }
 
   uint32_t readPSTATE() const {
-    return API::QEMU_read_pstate(*this);
+    return API::qemu_callbacks.QEMU_read_pstate(*this);
   }
 
   uint64_t readSP_el(uint8_t anId) const {
-    return API::QEMU_read_sp_el(anId, *this);
+    return API::qemu_callbacks.QEMU_read_sp_el(anId, *this);
   }
 
   uint32_t readDCZID_EL0() const {
-    return API::QEMU_read_DCZID_EL0(*this);
+    return API::qemu_callbacks.QEMU_read_DCZID_EL0(*this);
   }
 
   uint32_t readAARCH64() const {
-    return API::QEMU_read_AARCH64(*this);
+    return API::qemu_callbacks.QEMU_read_AARCH64(*this);
   }
 
   void readException(API::exception_t *exp) const {
-    return API::QEMU_read_exception(*this, exp);
+    return API::qemu_callbacks.QEMU_read_exception(*this, exp);
   }
 
   uint64_t getPendingInterrupt() const {
-    return API::QEMU_get_pending_interrupt(*this);
+    return API::qemu_callbacks.QEMU_get_pending_interrupt(*this);
   }
 
   uint64_t readSCTLR(uint8_t id) const {
-    return API::QEMU_read_sctlr(id, *this);
+    return API::qemu_callbacks.QEMU_read_sctlr(id, *this);
   }
 
   uint64_t readTPIDR(uint8_t id) const {
-    return API::QEMU_read_tpidr(id, *this);
+    return API::qemu_callbacks.QEMU_read_tpidr(id, *this);
   }
 
   uint64_t readHCREL2() const {
-    return API::QEMU_read_hcr_el2(*this);
+    return API::qemu_callbacks.QEMU_read_hcr_el2(*this);
   }
 
   uint32_t readFPCR() const {
-    return API::QEMU_read_fpcr(*this);
+    return API::qemu_callbacks.QEMU_read_fpcr(*this);
   }
 
   uint32_t readFPSR() const {
-    return API::QEMU_read_fpsr(*this);
+    return API::qemu_callbacks.QEMU_read_fpsr(*this);
   }
 
   bool hasWork() const {
-    return API::QEMU_cpu_has_work(*this);
+    return API::qemu_callbacks.QEMU_cpu_has_work(*this);
   }
 
   uint64_t readPC() const {
-    return API::QEMU_get_program_counter(*this);
+    return API::qemu_callbacks.QEMU_get_program_counter(*this);
   }
 
   bits readPhysicalAddress(PhysicalMemoryAddress anAddress, size_t aSize) const {
     uint8_t *buf = new uint8_t[aSize];
     for (size_t i = 0; i < aSize; i++)
       buf[i] = 0;
-    API::QEMU_read_phys_memory(buf, API::physical_address_t(anAddress), aSize);
+    API::qemu_callbacks.QEMU_read_phys_memory(buf, API::physical_address_t(anAddress), aSize);
 
     bits tmp;
     for (size_t i = 0; i < aSize; i++) {
@@ -247,24 +247,24 @@ public:
       bits value1, value2;
       size_t partial = finalAddress - anAddress;
       value1 = readPhysicalAddress(
-          PhysicalMemoryAddress(API::QEMU_logical_to_physical(*this, API::QEMU_DI_Instruction,
+          PhysicalMemoryAddress(API::qemu_callbacks.QEMU_logical_to_physical(*this, API::QEMU_DI_Instruction,
                                                               API::logical_address_t(anAddress))),
           partial);
       value2 = readPhysicalAddress(
-          PhysicalMemoryAddress(API::QEMU_logical_to_physical(
+          PhysicalMemoryAddress(API::qemu_callbacks.QEMU_logical_to_physical(
               *this, API::QEMU_DI_Instruction, API::logical_address_t(finalAddress))),
           size - partial);
       value2 = (value2 << (partial << 3)) | value1;
       return value2;
     }
     return readPhysicalAddress(
-        PhysicalMemoryAddress(API::QEMU_logical_to_physical(*this, API::QEMU_DI_Instruction,
+        PhysicalMemoryAddress(API::qemu_callbacks.QEMU_logical_to_physical(*this, API::QEMU_DI_Instruction,
                                                             API::logical_address_t(anAddress))),
         size);
   }
 
   PhysicalMemoryAddress translateVirtualAddress(VirtualMemoryAddress anAddress) {
-    return PhysicalMemoryAddress(API::QEMU_logical_to_physical(*this, API::QEMU_DI_Instruction,
+    return PhysicalMemoryAddress(API::qemu_callbacks.QEMU_logical_to_physical(*this, API::QEMU_DI_Instruction,
                                                                API::logical_address_t(anAddress)));
   }
 
@@ -284,7 +284,7 @@ public:
 
   uint64_t read_sysreg_from_qemu(uint8_t opc0, uint8_t opc1, uint8_t opc2, uint8_t crn,
                                  uint8_t crm) {
-    return API::QEMU_read_unhashed_sysreg(*this, opc0, opc1, opc2, crn, crm);
+    return API::qemu_callbacks.QEMU_read_unhashed_sysreg(*this, opc0, opc1, opc2, crn, crm);
   }
 };
 
@@ -302,17 +302,14 @@ public:
   }
 
 public:
-  uint8_t getQEMUExceptionLevel() const {
-    return API::QEMU_get_current_el(*this);
-  }
 
   void quitSimulation() {
-    API::QEMU_quit_simulation("Flexus quit simulatiom");
+    API::qemu_callbacks.QEMU_quit_simulation("Flexus quit simulatiom");
   }
 
   int advance(bool count_time = true) {
     int exception = 0;
-    exception = Qemu::API::QEMU_cpu_execute(theProcessor, count_time);
+    exception = Qemu::API::qemu_callbacks.QEMU_cpu_execute(theProcessor, count_time);
     return exception;
   }
 };
@@ -333,11 +330,11 @@ public:
     return *this;
   }
   static Processor getProcessor(int aProcessorNumber) {
-    return Processor(API::QEMU_get_cpu_by_index(
+    return Processor(API::qemu_callbacks.QEMU_get_cpu_by_index(
         /*ProcessorMapper::mapFlexusIndex2ProcNum(*/ aProcessorNumber));
   }
   static Processor getProcessor(std::string const &aProcessorName) {
-    return Processor(API::QEMU_get_object_by_name(aProcessorName.c_str()));
+    return Processor(API::qemu_callbacks.QEMU_get_object_by_name(aProcessorName.c_str()));
   }
   static Processor current() {
     assert(false);
