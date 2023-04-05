@@ -48,7 +48,7 @@
 namespace Flexus {
 namespace Qemu {
 namespace API {
-#include "api.h"
+#include "qflex-api.h"
 
 static void qflex_sim_callbacks_start_timing(void) {
   DBG_Assert(qflex_sim_callbacks.start_timing.fn != NULL, (<< "Callback was never intialized but still was called"));
@@ -113,8 +113,6 @@ QFLEX_TO_QEMU_API_t qemu_callbacks =
   .QEMU_read_register = nullptr,
   .QEMU_read_unhashed_sysreg = nullptr,
   .QEMU_read_pstate = nullptr,
-  .QEMU_read_fpcr = nullptr,
-  .QEMU_read_fpsr = nullptr,
   .QEMU_read_sctlr = nullptr,
   .QEMU_cpu_has_work = nullptr,
   .QEMU_read_sp_el = nullptr,
@@ -140,7 +138,6 @@ QFLEX_TO_QEMU_API_t qemu_callbacks =
   .QEMU_mem_op_is_read = nullptr,
 
   .QEMU_instruction_handle_interrupt = nullptr,
-  .QEMU_get_pending_exception = nullptr,
   .QEMU_get_object_by_name = nullptr,
   .QEMU_cpu_execute = nullptr,
   .QEMU_is_in_simulation = nullptr,
@@ -162,8 +159,6 @@ void QFLEX_API_set_Interface_Hooks(const QFLEX_TO_QEMU_API_t *hooks) {
   qemu_callbacks.QEMU_read_register                  = hooks->QEMU_read_register;
   qemu_callbacks.QEMU_read_unhashed_sysreg           = hooks->QEMU_read_unhashed_sysreg;
   qemu_callbacks.QEMU_read_pstate                    = hooks->QEMU_read_pstate;
-  qemu_callbacks.QEMU_read_fpcr                      = hooks->QEMU_read_fpcr;
-  qemu_callbacks.QEMU_read_fpsr                      = hooks->QEMU_read_fpsr;
   qemu_callbacks.QEMU_read_sctlr                     = hooks->QEMU_read_sctlr;
   qemu_callbacks.QEMU_cpu_has_work                   = hooks->QEMU_cpu_has_work;
   qemu_callbacks.QEMU_read_sp_el                     = hooks->QEMU_read_sp_el;
@@ -189,7 +184,6 @@ void QFLEX_API_set_Interface_Hooks(const QFLEX_TO_QEMU_API_t *hooks) {
   qemu_callbacks.QEMU_mem_op_is_read                 = hooks->QEMU_mem_op_is_read;
  
   qemu_callbacks.QEMU_instruction_handle_interrupt   = hooks->QEMU_instruction_handle_interrupt;
-  qemu_callbacks.QEMU_get_pending_exception          = hooks->QEMU_get_pending_exception;
   qemu_callbacks.QEMU_get_object_by_name             = hooks->QEMU_get_object_by_name;
   qemu_callbacks.QEMU_cpu_execute                    = hooks->QEMU_cpu_execute;
   qemu_callbacks.QEMU_is_in_simulation               = hooks->QEMU_is_in_simulation;

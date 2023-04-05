@@ -48,7 +48,7 @@
 namespace Flexus {
 namespace Qemu {
 namespace API {
-#include <core/qemu/api.h>
+#include <core/qemu/qflex-api.h>
 } // namespace API
 } // namespace Qemu
 } // namespace Flexus

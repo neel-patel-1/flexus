@@ -139,13 +139,13 @@ public:
   std::string disassemble(VirtualMemoryAddress const &anAddress) const {
     API::logical_address_t pc(anAddress);
     char *log_buf = new char[2048];
-    char *buffer = API::qemu_callbacks.QEMU_disassemble(*this, pc, &log_buf);
-    char *buffer_dup = (char *)buffer;
+    API::qemu_callbacks.QEMU_disassemble(*this, pc, &log_buf);
+    char *buffer_dup = (char *)log_buf;
     while (buffer_dup[0] != '\n') {
       buffer_dup++;
     }
     buffer_dup[0] = '\0'; // Insert string termination
-    std::string s(buffer);
+    std::string s(log_buf);
     delete log_buf;
     return s;
   }

@@ -53,14 +53,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
-
-namespace Flexus {
-namespace Qemu {
-namespace API {
-#include <core/qemu/api.h>
-} // namespace API
-} // namespace Qemu
-} // namespace Flexus
+#include <core/qemu/api_wrappers.hpp>
 
 using namespace Flexus::Core;
 using namespace Flexus::Qemu::API;
