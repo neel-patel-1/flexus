@@ -137,15 +137,7 @@ struct TracerStats {
   }
 };
 
-#if FLEXUS_TARGET_IS(v9)
-#define IS_PRIV(mem_trans) (mem_trans->sparc_specific.priv)
-#elif FLEXUS_TARGET_IS(ARM)
 #define IS_PRIV(mem_trans) (!mem_trans->arm_specific.user)
-#elif FLEXUS_TARGET_IS(X86)
-#define IS_PRIV(mem_trans) (mem_trans->i386_specific.mode == API::QEMU_CPU_Mode_Supervisor)
-#else // !FLEXUS_TARGET_IS(v9) && !FLEXUS_TARGET(ARM) && !FLEXUS_TARGET(X86)
-#error Unknown target
-#endif // FLEXUS_TARGET_IS(v9) || FLEXUS_TARGET(ARM) || FLEXUS_TARGET(X86)
 
 class QemuTracerImpl {
   API::conf_object_t *theUnderlyingObject;
@@ -198,12 +190,7 @@ public:
     theUserStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-User:");
     theOSStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-OS:");
     theBothStats = new TracerStats(boost::padded_string_cast<2, '0'>(theIndex) + "-feeder-");
-
-#if FLEXUS_TARGET_IS(v9)
     thePhysIO = 0;
-#else
-    thePhysIO = 0;
-#endif
   }
 
   void updateStats() {
@@ -226,19 +213,9 @@ public:
     theMemoryMessage.branchType() = branchTypeTable[mem_trans->s.branch_type];
     theMemoryMessage.branchAnnul() = (mem_trans->s.annul != 0);
 
-#if FLEXUS_TARGET_IS(v9) & 0
-    uint64_t reg_content;
-    API::qemu_callbacks.QEMU_read_register(theCPU, 46 /* kTL */, nullptr, &reg_content);
-    theMemoryMessage.tl() = reg_content;
-#else
     theMemoryMessage.tl() = 0;
-#endif
 
-#if FLEXUS_TARGET_IS(v9) & 0
-    uint32_t opcode = API::qemu_callbacks.QEMU_read_phys_memory(theCPU, mem_trans->s.physical_address, 4);
-#else
     uint32_t opcode = 0;
-#endif
     IS_PRIV(mem_trans) ? theOSStats->theFetches++ : theUserStats->theFetches++;
     theBothStats->theFetches++;
 
@@ -254,41 +231,13 @@ public:
     // op Flexus::SharedTypes::MemoryMessage msg(MemoryMessage::LoadReq);
     // toL1D((int32_t) 0, msg);
     const int32_t k_no_stall = 0;
-#if FLEXUS_TARGET_IS(x86) || FLEXUS_TARGET_IS(v9) || FLEXUS_TARGET_IS(ARM)
     if (mem_trans->io) {
       // Count data accesses
       IS_PRIV(mem_trans) ? theOSStats->theIOOps++ : theUserStats->theIOOps++;
       theBothStats->theIOOps++;
       return k_no_stall; // Not a memory operation
     }
-#endif
 
-#if FLEXUS_TARGET_IS(v9)
-    if (!mem_trans->sparc_specific.cache_physical) {
-      // Count data accesses
-      IS_PRIV(mem_trans) ? theOSStats->theUncacheableOps++ : theUserStats->theUncacheableOps++;
-      theBothStats->theUncacheableOps++;
-      return k_no_stall; // Not a memory operation
-    }
-#endif
-
-#if FLEXUS_TARGET_IS(v9)
-    if (mem_trans->sparc_specific.address_space == 0x71) {
-      // BLK stores to ASI 71.
-      // These stores update the data caches on hit, but do not allocate on
-      // miss.  The best way to model these in
-      theMemoryMessage.address() = PhysicalMemoryAddress(mem_trans->s.physical_address);
-      theMemoryMessage.pc() = VirtualMemoryAddress(API::qemu_callbacks.QEMU_get_program_counter(theCPU));
-      theMemoryMessage.priv() = IS_PRIV(mem_trans);
-      theMemoryMessage.reqSize() = mem_trans->s.size;
-      theMemoryMessage.type() = MemoryMessage::NonAllocatingStoreReq;
-      toNAW(theIndex, theMemoryMessage);
-      // NOTE: with the current implementation the LRU position of a block is
-      // not updated upon a NAW hit. (NIKOS) We may want to fix the NAW hits,
-      // but I don't expect it'll make a measurable difference.
-      return k_no_stall; // Not a memory operation
-    }
-#endif
     if (mem_trans->s.type == API::QEMU_Trans_Instr_Fetch) {
       return insn_fetch(mem_trans);
     }
@@ -301,58 +250,6 @@ public:
 
     // Set the type field of the memory operation
     if (mem_trans->s.atomic) {
-
-#if FLEXUS_TARGET_IS(v9)
-      // Need to determine opcode, as this may be an RMW or CAS
-      // record the opcode
-      API::physical_address_t pc =
-          API::qemu_callbacks.QEMU_logical_to_physical(theCPU, API::QEMU_DI_Instruction, mem_trans->s.pc);
-      uint32_t op_code = API::qemu_callbacks.QEMU_read_phys_memory(pc, 4);
-
-      // LDD(a)            is 11-- ---0 -001 1--- ---- ---- ---- ----
-      // STD(a)            is 11-- ---0 -011 1--- ---- ---- ---- ----
-
-      // LDSTUB(a)/SWAP(a) is 11-- ---0 -11- 1--- ---- ---- ---- ----
-      // CAS(x)A           is 11-- ---1 111- 0--- ---- ---- ---- ----
-
-      const uint32_t kLDD_mask = 0xC1780000;
-      const uint32_t kLDD_pattern = 0xC0180000;
-
-      const uint32_t kSTD_mask = 0xC1780000;
-      const uint32_t kSTD_pattern = 0xC038000;
-
-      const uint32_t kRMW_mask = 0xC1680000;
-      const uint32_t kRMW_pattern = 0xC0680000;
-
-      const uint32_t kCAS_mask = 0xC1E80000;
-      const uint32_t kCAS_pattern = 0xC1E00000;
-
-      if ((op_code & kLDD_mask) == kLDD_pattern) {
-        theMemoryMessage.type() = MemoryMessage::LoadReq;
-        IS_PRIV(mem_trans) ? theOSStats->theLoadOps++ : theUserStats->theLoadOps++;
-        theBothStats->theLoadOps++;
-      } else if ((op_code & kSTD_mask) == kSTD_pattern) {
-        theMemoryMessage.type() = MemoryMessage::StoreReq;
-        IS_PRIV(mem_trans) ? theOSStats->theStoreOps++ : theUserStats->theStoreOps++;
-        theBothStats->theStoreOps++;
-      } else if ((op_code & kCAS_mask) == kCAS_pattern) {
-        theMemoryMessage.type() = MemoryMessage::CmpxReq;
-        IS_PRIV(mem_trans) ? theOSStats->theCASOps++ : theUserStats->theCASOps++;
-        theBothStats->theCASOps++;
-      } else if ((op_code & kRMW_mask) == kRMW_pattern) {
-        theMemoryMessage.type() = MemoryMessage::RMWReq;
-        IS_PRIV(mem_trans) ? theOSStats->theRMWOps++ : theUserStats->theRMWOps++;
-        theBothStats->theRMWOps++;
-      } else {
-        // FIXME getting an error with swap, says the opcode is 7cc2, which
-        // means the first 2 bytes are all 0s this might not be possible in
-        // sparc.
-        //        printf("LDD: %x, STD: %x, CAS: %x, RMW: %x\n", kLDD_mask,
-        //        kSTD_mask, kRMW_mask, kCAS_mask);
-        DBG_Assert(false, (<< "Unknown atomic operation. Opcode: " << std::hex << op_code
-                           << " pc: " << pc << std::dec));
-      }
-#elif FLEXUS_TARGET_IS(ARM)
       theMemoryMessage.type() = MemoryMessage::RMWReq;
       switch (mem_trans->s.type) {
       case API::QEMU_Trans_Load:
@@ -369,12 +266,6 @@ public:
         DBG_Assert(false);
         break;
       }
-#else  // Assume all atomic x86 atomic operations are RMWs.
-      theMemoryMessage.type() = MemoryMessage::RMWReq;
-      IS_PRIV(mem_trans) ? theOSStats->theRMWOps++ : theUserStats->theRMWOps++;
-      theBothStats->theRMWOps++;
-#endif // v9
-
     } else {
       switch (mem_trans->s.type) {
       case API::QEMU_Trans_Load:
@@ -431,19 +322,6 @@ public:
         break;
       }
     }
-#if FLEXUS_TARGET_IS(v9)
-    if (mem_trans->sparc_specific.address_space == 0x71) {
-      // BLK stores to ASI 71.
-      // These stores update the data caches on hit, but do not allocate on
-      // miss.  The best way to model these in
-      theMemoryMessage.reqSize() = mem_trans->s.size;
-      if (theSendNonAllocatingStores)
-        theMemoryMessage.type() = MemoryMessage::NonAllocatingStoreReq;
-      else {
-        DBG_Assert(theMemoryMessage.type() = MemoryMessage::StoreReq);
-      }
-    }
-#endif
 
     toL1D(theIndex, theMemoryMessage);
     if (theIndex != 0) {
