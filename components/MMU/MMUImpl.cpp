@@ -457,30 +457,30 @@ public:
     mmu_obj->SCTLR[EL3] = Flexus::Qemu::Processor::getProcessor(anIndex)->readSCTLR(EL3);
 
     mmu_obj->TCR[EL0] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, EL0);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, -1, EL0);
     mmu_obj->TCR[EL1] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, EL1);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, -1, EL1);
     mmu_obj->TCR[EL2] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, EL2);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, -1, EL2);
     mmu_obj->TCR[EL3] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, EL3);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TCR, -1, EL3);
     // mmu_obj->TTBR1[EL0] = Qemu::API::qemu_callbacks.QEMU_read_register(
     //     *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR1, EL0);
     mmu_obj->TTBR0[EL1] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR0, EL1);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR0, -1, EL1);
     mmu_obj->TTBR1[EL1] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR1, EL1);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR1, -1, EL1);
     mmu_obj->TTBR0[EL2] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR0, EL2);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR0, -1, EL2);
     mmu_obj->TTBR1[EL2] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR1, EL2);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR1, -1, EL2);
     mmu_obj->TTBR0[EL3] = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR0, EL3);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR0, -1, EL3);
     // mmu_obj->TTBR1[EL3] = Qemu::API::qemu_callbacks.QEMU_read_register(
     //     *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_TTBR1, EL3);
 
     mmu_obj->ID_AA64MMFR0_EL1 = Qemu::API::qemu_callbacks.QEMU_read_register(
-        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_ID_AA64MMFR0_EL1, 0);
+        *Flexus::Qemu::Processor::getProcessor(anIndex), Qemu::API::kMMU_ID_AA64MMFR0, -1, -1);
 
     return mmu_obj;
   }

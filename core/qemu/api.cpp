@@ -71,7 +71,7 @@ static void qflex_sim_callbacks_periodic(void) {
 }
 
 void qflex_sim_callbacks_trace_mem(int cpu_index, memory_transaction_t *mem_trans) {
-  DBG_Assert(qflex_sim_callbacks.trace_mem != NULL, (<< "Callback was never intialized but still was called"));
+  DBG_Assert(qflex_sim_callbacks.trace_mem[cpu_index].fn != NULL, (<< "Callback was never intialized but still was called"));
   ((QFLEX_SIM_CALLBACK_TRACE_MEM) qflex_sim_callbacks.trace_mem[cpu_index].fn)(qflex_sim_callbacks.trace_mem[cpu_index].obj, mem_trans);
 }
 

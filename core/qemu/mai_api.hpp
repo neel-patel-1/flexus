@@ -167,11 +167,11 @@ public:
   }
 
   uint64_t readXRegister(int anIndex) const {
-    return API::qemu_callbacks.QEMU_read_register(*this, API::kGENERAL, anIndex);
+    return API::qemu_callbacks.QEMU_read_register(*this, API::kGENERAL, anIndex, -1);
   }
 
   uint64_t readVRegister(int anIndex) const {
-    return API::qemu_callbacks.QEMU_read_register(*this, API::kFLOATING_POINT, anIndex);
+    return API::qemu_callbacks.QEMU_read_register(*this, API::kFLOATING_POINT, anIndex, -1);
   }
 
   uint32_t readPSTATE() const {
