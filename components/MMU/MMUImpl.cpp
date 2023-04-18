@@ -309,7 +309,7 @@ public:
       if (cfg.PerfectTLB) {
         PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
             *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-            item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+            item->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
             item->theVaddr));
         entry.first = true;
         entry.second = perfectPaddr;
@@ -328,7 +328,7 @@ public:
 
         PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
             *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-            item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+            item->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
             item->theVaddr));
         // DBG_Assert(item->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << item->theVaddr << ", PA:" << item->thePaddr << ", PerfectPaddr:" << perfectPaddr));
         if(item->thePaddr != perfectPaddr){
@@ -354,7 +354,7 @@ public:
           } else {
             PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
                 *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-                item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+                item->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
                 item->theVaddr));
             item->setHit();
             item->thePaddr = perfectPaddr;
@@ -405,7 +405,7 @@ public:
         }
         PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
             *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-            item->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+            item->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
             item->theVaddr));
         DBG_Assert(item->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << item->theVaddr << ", PA:" << item->thePaddr << ", PerfectPaddr:" << perfectPaddr));
         if (item->isInstr())
@@ -543,7 +543,7 @@ public:
   void sendTLBresponse(TranslationPtr aTranslation) {
     PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
         *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-        aTranslation->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+        aTranslation->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
         aTranslation->theVaddr));
     DBG_Assert(aTranslation->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << aTranslation->theVaddr << ", PA:" << aTranslation->thePaddr << ", PerfectPaddr:" << perfectPaddr));
     if (aTranslation->isInstr()) {
@@ -560,7 +560,7 @@ public:
   void push(interface::TLBReqIn const &, index_t anIndex, TranslationPtr &aTranslate) {
     PhysicalMemoryAddress perfectPaddr(Qemu::API::qemu_callbacks.QEMU_logical_to_physical(
         *Flexus::Qemu::Processor::getProcessor(flexusIndex()),
-        aTranslate->isInstr() ? Qemu::API::qemu_callbacks.QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
+        aTranslate->isInstr() ? Qemu::API::QEMU_DI_Instruction : Qemu::API::QEMU_DI_Data,
         aTranslate->theVaddr));
     DBG_Assert(aTranslate->thePaddr == perfectPaddr, (<< "Translation mismatch. VA:" << aTranslate->theVaddr << ", PA:" << aTranslate->thePaddr << ", PerfectPaddr:" << perfectPaddr));
     if (!cfg.PerfectTLB &&
