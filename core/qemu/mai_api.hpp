@@ -214,7 +214,7 @@ public:
   }
 
   uint32_t readFPSR() const {
-    return API::qemu_callbacks.QEMU_read_fpsr(*this);
+    return API::qemu_callbacks.QEMU_read_unhashed_sysreg(*this, 3, 3, 0, 4, 4);
   }
 
   bool hasWork() const {

@@ -476,12 +476,6 @@ private:
     theCore->initializeRegister(ccReg(0), pstate);
   }
 
-  void resetException() {
-    API::exception_t exp;
-    theCPU->readException(&exp);
-    theCore->setException(exp);
-  }
-
   void resetHCREL2() {
     theCore->setHCREL2(theCPU->readHCREL2());
   }

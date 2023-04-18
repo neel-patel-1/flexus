@@ -229,11 +229,11 @@ struct ValueTracker {
   void register_mem_iface(int vm) {
     DBG_(VVerb, (<< "Registering DMA tracker " << vm));
 
-    API::conf_object_t *dma_map_object =.QEMU_get_object_by_name("dma_mem");
+    API::conf_object_t *dma_map_object = API::qemu_callbacks.QEMU_get_object_by_name("dma_mem");
     //    API::qemu_callbacks.QEMU_clear_exception();
     if (!dma_map_object) {
       std::string dma_map_name = "dma_mem" + std::to_string(vm);
-      dma_map_object =.QEMU_get_object_by_name(dma_map_name.c_str());
+      dma_map_object = API::qemu_callbacks.QEMU_get_object_by_name(dma_map_name.c_str());
     }
 
     DBG_(Crit, (<< "ALEX -- WARNING: DMA tracker has not been set up (Needs to "

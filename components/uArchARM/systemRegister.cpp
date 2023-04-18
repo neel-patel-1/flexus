@@ -140,9 +140,9 @@ public:
   virtual void reset(uArchARM *aCore) override {
     DBG_Assert(false);
   } // FIXME /*arm_cp_reset_ignore*/
-  virtual uint64_t readfn(uArchARM *aCore) override {
-    return aCore->getTPIDR(0);
-  }
+  // virtual uint64_t readfn(uArchARM *aCore) override {
+  //   return aCore->getTPIDR(0);
+  // }
   TPIDR_EL0_()
       : SysRegInfo("TPIDR_EL0_", TPIDR_EL0_::state, TPIDR_EL0_::type, TPIDR_EL0_::opc0,
                    TPIDR_EL0_::opc1, TPIDR_EL0_::opc2, TPIDR_EL0_::crn, TPIDR_EL0_::crm,
