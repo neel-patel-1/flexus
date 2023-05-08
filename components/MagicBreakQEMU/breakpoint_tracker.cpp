@@ -558,7 +558,7 @@ char readVirtualAddress(Qemu::API::conf_object_t *cpu, VirtualMemoryAddress anAd
 
 // FIXME: make a proper x86 variant
 uint64_t readG(Qemu::API::conf_object_t *cpu, int reg) {
-  return Qemu::API::qemu_callbacks.QEMU_read_register(cpu, Qemu::API::kGENERAL, reg);
+  return Qemu::API::qemu_callbacks.QEMU_read_register(cpu, Qemu::API::kGENERAL, reg, -1);
 }
 
 class SimPrintHandlerImpl : public SimPrintHandler {
