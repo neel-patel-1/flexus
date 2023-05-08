@@ -67,7 +67,7 @@ extern "C" {
 // Hooked with `dlsym` in `flexus_proxy.c`
 void qflex_sim_init(Flexus::Qemu::API::QFLEX_TO_QEMU_API_t *hooks_from_qemu,
                     Flexus::Qemu::API::QEMU_TO_QFLEX_CALLBACKS_t *hooks_to_qemu, 
-                    int nb_cores, const char *config_file) {
+                    int nb_cores, const char *config_file, const char *debug_mode) {
   print_copyright();
   QFLEX_API_set_Interface_Hooks(hooks_from_qemu);
   QEMU_API_get_Interface_Hooks(hooks_to_qemu);
@@ -77,7 +77,7 @@ void qflex_sim_init(Flexus::Qemu::API::QFLEX_TO_QEMU_API_t *hooks_from_qemu,
     std::cerr << "  gdb - " << getpid() << std::endl;
     raise(SIGSTOP);
   }
-  Flexus::Core::flexusInit(nb_cores, config_file);
+  Flexus::Core::flexusInit(nb_cores, config_file, debug_mode);
 }
 
 }

@@ -796,7 +796,7 @@ void CreateFlexusObject() {
   }
 }
 
-void flexusInit(int nb_cores, const char* config_file_) {
+void flexusInit(int nb_cores, const char* config_file_, const char* debug_mode_) {
   if (theFlexus != nullptr) {
     DBG_(Crit, (<< "Flexus already initialized"));
     return;
@@ -818,8 +818,11 @@ void flexusInit(int nb_cores, const char* config_file_) {
   theFlexus->initializeComponents();
   DBG_(Iface, (<< "Flexus Initialized."));
 
-  // Hook functions
-   // Insert periodic callback
+  if (debug_mode_) {
+    theFlexus->setDebug(debug_mode_);
+  }
+
+  // Hook part of functions from Flexus to QEMU
   Flexus::Qemu::API::qflex_sim_callbacks.sim_quit.fn =  (void *) &flexusStop;
   Flexus::Qemu::API::qflex_sim_callbacks.start_timing.fn = (void *) &flexusStartTiming;
   Flexus::Qemu::API::qflex_sim_callbacks.qmp.fn = (void *) &flexusQMP;

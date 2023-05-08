@@ -54,7 +54,7 @@ namespace Core {
 void CreateFlexusObject();
 
 // Interface to QEMU
-void flexusInit(int nb_cores, const char *config_file);
+void flexusInit(int nb_cores, const char *config_file, const char* debug_mode);
 void flexusStop();
 
 // Flexus 
