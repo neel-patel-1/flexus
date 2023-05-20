@@ -73,6 +73,7 @@ if(NOT BOOST_INCLUDEDIR)
   set(BOOST_INCLUDEDIR /usr/local/include)
 endif()
 
+<<<<<<< Updated upstream
 if(NOT CMAKE_C_COMPILER)
   message( STATUS "CMAKE_C_COMPILER was not specified; using default CMAKE_C_COMPILER=/usr/bin/gcc" )
   set(CMAKE_C_COMPILER /usr/bin/gcc)
@@ -81,6 +82,14 @@ endif()
 if(NOT CMAKE_CXX_COMPILER)
   message( STATUS "CMAKE_CXX_COMPILER was not specified; using default CMAKE_CXX_COMPILER=/usr/bin/g++" )
   set(CMAKE_CXX_COMPILER /usr/bin/g++)
+=======
+if(CMAKE_C_COMPILER)
+  message( STATUS "CMAKE_C_COMPILER was not specified; using default CMAKE_C_COMPILER" )
+endif()
+
+if(CMAKE_CXX_COMPILER)
+  message( STATUS "CMAKE_CXX_COMPILER was not specified; using default CMAKE_CXX_COMPILER" )
+>>>>>>> Stashed changes
 endif()
 
 if(NOT BOOST_LIBRARYDIR)
