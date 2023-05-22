@@ -5,56 +5,49 @@
 * Install a compatible version of `gcc`:
 
 ```sh
-$ export GCC_VERSION="8"
-$ sudo apt-get update
-$ sudo apt-get -y install gcc-${GCC_VERSION} g++-${GCC_VERSION}
+spack env create qflex qflex.yaml
+spack install
 ```
 
 * Set the recently installed version of `gcc` as default:
 
 ```sh
-$ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} 20
-$ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION} 20
-$ sudo update-alternatives --config gcc
-$ sudo update-alternatives --config g++
+spack load gcc@8.5.0
 ```
 
-* Install a compatible version of `boost` library:
-
-Using the package manager (1.65 on Ubuntu 18.04)
+build `boost` from scratch (run ./build_boost.sh)
 ```sh
-$ sudo apt-get -y install libboost-all-dev
-```
-or build from scratch
-```sh
-$ export BOOST="boost_1_70_0"
-$ export BOOST_VERSION="1.70.0"
-$ wget https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/${BOOST}.tar.gz -O /tmp/${BOOST}.tar.gz
-$ tar -xf /tmp/${BOOST}.tar.gz
-$ cd ./${BOOST}/
-$ ./bootstrap.sh --prefix=/usr/local
-$ ./b2 -j8
-$ sudo ./b2 install
+export BOOST="boost_1_70_0"
+export BOOST_BUILD=$(pwd)/boost_1_70_0-build
+wget https://boostorg.jfrog.io/artifactory/main/release/1.70.0/source/boost_1_70_0.tar.gz -O /tmp/${BOOST}.tar.gz
+tar -xf /tmp/${BOOST}.tar.gz
+cd ./${BOOST}/
+./bootstrap.sh --prefix=$BOOST_BUILD
+./b2 -j8
+sudo ./b2 install
 ```
 
 ## How to Use CMake to Compile Flexus
 
-* The default settings are:
-
+* example options
 ```sh
 -DTARGET_PLATFORM=arm
 -DSELECTED_DEBUG=vverb
 -DSIMULATOR=KnottyKraken
--DCMAKE_C_COMPILER=/usr/bin/gcc
--DCMAKE_CXX_COMPILER=/usr/bin/g++
--DBOOST_INCLUDEDIR=/usr/local/include
--DBOOST_LIBRARYDIR=/usr/local/lib
+-DCMAKE_C_COMPILER=gcc
+-DCMAKE_CXX_COMPILER=g++
+-DBOOST_INCLUDEDIR=$(pwd)/boost_1_70_0-build/include
+-DBOOST_LIBRARYDIR=$(pwd)/boost_1_70_0-build/lib
 ```
 
 * Add options by `-D${OPTION_NAME}=${OPTION}` after `cmake`.
 
 ```sh
-$ cmake -DSIMULATOR=KnottyKraken . && make -j
+cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DBOOST_INCLUDEDIR=$(pwd)/boost_1_70_0-build/include -DBOOST_LIBRARYDIR=$(pwd)/boost_1_70_0-build/lib -DSIMULATOR=KeenKraken .
+LD_LIBRARY_PATH=$SPACK_ROOT/var/spack/environments/qflex/.spack-env/view/lib:./boost_1_70_0-build/lib make -j
+
+# Running with keen-kraken
+LD_LIBRARY_PATH=$SPACK_ROOT/var/spack/environments/qflex/.spack-env/view/lib:$BOOST_BUILD/lib:$LD_LIBRARY_PATH ./../scripts/captain/captain ../scripts/captain/keen_config/system.ini -o output/
 ```
 
 * Use `make clean` to only remove `*.a` and `*.so` files.
@@ -70,18 +63,8 @@ $ LD_LIBRARY_PATH=<path to dynamic libraries> make -j
 * Set the `SIMULATOR` variable to `Harness` while running `cmake`:
 
 ```sh
-$ cmake -DSIMULATOR=Harness . && make -j
-```
-
-* The default value of other variables are:
-
-```sh
--DTARGET_PLATFORM=arm
--DSELECTED_DEBUG=vverb
--DCMAKE_C_COMPILER=/usr/bin/gcc
--DCMAKE_CXX_COMPILER=/usr/bin/g++
--DBOOST_INCLUDEDIR=/usr/local/include
--DBOOST_LIBRARYDIR=/usr/local/lib
+cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DBOOST_INCLUDEDIR=$(pwd)/boost_1_70_0-build/include -DBOOST_LIBRARYDIR=$(pwd)/boost_1_70_0-build/lib -DSIMULATOR=Harness .
+LD_LIBRARY_PATH=./boost_1_70_0-build/lib make -j
 ```
 
 * Use `make clean` to only remove `*.a` and `*.so` files.
