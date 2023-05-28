@@ -15,7 +15,7 @@ spack install
 spack load gcc@8.5.0
 ```
 
-build `boost` from scratch (run ./build_boost.sh)
+* build `boost` from scratch (run ./build_boost.sh)
 ```sh
 export BOOST="boost_1_70_0"
 export BOOST_BUILD=$(pwd)/boost_1_70_0-build
@@ -41,8 +41,11 @@ sudo ./b2 install
 ```
 
 * Add options by `-D${OPTION_NAME}=${OPTION}` after `cmake`.
-
+* build `XFMKraken.so`, `KeenKraken.so` and `KnottyKraken.so` from scratch (run ./build_krakens.sh)
 ```sh
+cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DBOOST_INCLUDEDIR=$(pwd)/boost_1_70_0-build/include -DBOOST_LIBRARYDIR=$(pwd)/boost_1_70_0-build/lib -DSIMULATOR=XFMKraken .
+LD_LIBRARY_PATH=$SPACK_ROOT/var/spack/environments/qflex/.spack-env/view/lib:./boost_1_70_0-build/lib make -j
+
 cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DBOOST_INCLUDEDIR=$(pwd)/boost_1_70_0-build/include -DBOOST_LIBRARYDIR=$(pwd)/boost_1_70_0-build/lib -DSIMULATOR=KeenKraken .
 LD_LIBRARY_PATH=$SPACK_ROOT/var/spack/environments/qflex/.spack-env/view/lib:./boost_1_70_0-build/lib make -j
 
