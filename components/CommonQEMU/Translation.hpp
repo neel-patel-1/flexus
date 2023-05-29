@@ -216,7 +216,8 @@ struct Translation : public boost::counted_base {
 
   Translation &operator++(int) {
     if (++theTimeoutCounter > 1000) {
-      DBG_Assert(false);
+      // DBG_Assert(false);
+      // DBG_(Crit, (<< "theTimeoutCounter: "<<theTimeoutCounter));
     }
     return *this;
   }

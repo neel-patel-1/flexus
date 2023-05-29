@@ -353,6 +353,7 @@ DRIVE( theuFetch, uFetchDrive )
 , DRIVE( theL2, CMPCacheDrive )
 , DRIVE( theL1d, CacheDrive )
 , DRIVE( theMagicBreak, TickDrive )
+, DRIVE( theXFMArb, XFMDrive )
 
 #include FLEXUS_END_DRIVE_ORDER_SECTION()
     // clang-format on

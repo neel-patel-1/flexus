@@ -94,12 +94,12 @@ public:
       boost::intrusive_ptr<narmDecoder::armInstruction> insn =
           boost::polymorphic_pointer_downcast<narmDecoder::armInstruction>(anInstruction);
       if (insn->isPageFault()){
-        DBG_(Crit, (<< "XFMArbiter Intercepted page fault: insn=="));
-        // DBG_(Crit, (<< "XFMArbiter Intercepted page fault: insn=="<< *insn <<
-        //               "cycle=="<<Flexus::Core::theFlexus->cycleCount()));
-        // Flexus::Core::theFlexus->pause
-        // std::cout<< "XFMArbiter Intercepted page fault: insn="<< *insn <<
-        //               "cycle="<<Flexus::Core::theFlexus->cycleCount()));
+        DBG_(Crit, (<< "XFMArbiter Intercepted page fault: insn=="<< *insn <<
+                      "cycle=="<<Flexus::Core::theFlexus->cycleCount()));
+      }
+      else{
+        std::cout << "Not a page fault on instr Called. Quiescing the flexus\n";
+        // Flexus::Core::theFlexus->quiesceAndSave();
       }
       // theCore->dispatch(insn);
     } catch (...) {
@@ -111,12 +111,14 @@ public:
 
   // Drive Interfaces
   void drive(interface::XFMDrive const &) {
-    curState++;
-    std::cout << "Drive Called. Sending incremented state " << curState << " over Port:getState\n";
+    this->flQuiesces++;
+    std::cout << "Drive Called. Quiescing the flexus\n";
+    // Flexus::Core::theFlexus->quiesceAndSave();
   }
 
 private:
-  int curState = 100;
+  int flQuiesces = 100;
+  
 };
 
 } // End namespace nXFM
