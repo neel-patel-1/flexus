@@ -1,16 +1,25 @@
 set(XFMKraken_REQUIRED_COMPONENTS
   CommonQEMU 
-  DecoupledFeederQEMU 
-  FastCache 
-  FastCMPCache 
-  FastMemoryLoopback 
+  uFetch 
+  armDecoder 
+  uArchARM 
+  FetchAddressGenerate 
+  Cache
+  MemoryLoopback 
+  MemoryMap 
   MagicBreakQEMU 
-  BPWarm 
+  CMPCache 
+  MultiNic 
+  NetShim 
   TraceTrackerQEMU 
+  MTManager 
+  SplitDestinationMapper 
   MMU
   XFMArbiter
 )
 
+set(SUPPORTS_STANDALONE false)
+set(SUPPORTS_SIMICS false)
 set(SUPPORTS_QEMU true)
 set(DEFAULT_TARGET qemu)
 set(SUPPORTS_X86 false)

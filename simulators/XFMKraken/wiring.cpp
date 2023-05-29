@@ -42,43 +42,49 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  DO-NOT-REMOVE end-copyright-block
-// FIXME Removed WhiteBox (commented out) of all places used in the simulator
-
 #define FLEXUS_WIRING_FILE
 #include <core/simulator_layout.hpp>
 
 // This section contains the name of the simulator
 #include <core/simulator_name.hpp>
 namespace Flexus {
-// Simulator Name
-std::string theSimulatorName = "XFM Kraken v1.0";
-} // namespace Flexus
+std::string theSimulatorName = "XFM_Timing";
+}
 
 #include FLEXUS_BEGIN_DECLARATION_SECTION()
 
-#include <components/BPWarm/BPWarm.hpp>
-#include <components/DecoupledFeederQEMU/DecoupledFeeder.hpp>
-#include <components/FastCMPCache/FastCMPCache.hpp>
-#include <components/FastCache/FastCache.hpp>
-#include <components/FastMemoryLoopback/FastMemoryLoopback.hpp>
+#include <components/CMPCache/CMPCache.hpp>
+#include <components/Cache/Cache.hpp>
+#include <components/FetchAddressGenerate/FetchAddressGenerate.hpp>
 #include <components/MMU/MMU.hpp>
 #include <components/MagicBreakQEMU/MagicBreak.hpp>
+#include <components/MemoryLoopback/MemoryLoopback.hpp>
+#include <components/MemoryMap/MemoryMap.hpp>
+#include <components/armDecoder/armDecoder.hpp>
+#include <components/uArchARM/uArchARM.hpp>
+#include <components/uFetch/PortCombiner.hpp>
+#include <components/uFetch/uFetch.hpp>
 #include <components/XFMArbiter/XFMArbiter.hpp>
 
 #include FLEXUS_END_DECLARATION_SECTION()
 
 #include FLEXUS_BEGIN_COMPONENT_CONFIGURATION_SECTION()
 
-CREATE_CONFIGURATION(DecoupledFeeder, "feeder", theFeederCfg);
-CREATE_CONFIGURATION(FastCache, "L1d", theL1DCfg);
-CREATE_CONFIGURATION(FastCache, "L1i", theL1ICfg);
-CREATE_CONFIGURATION(FastCMPCache, "L2", theL2Cfg);
-CREATE_CONFIGURATION(FastMemoryLoopback, "memory", theMemoryCfg);
-CREATE_CONFIGURATION(MagicBreak, "magic-break", theMagicBreakCfg);
-CREATE_CONFIGURATION(BPWarm, "bpwarm", theBPWarmCfg);
 CREATE_CONFIGURATION(MMU, "mmu", theMMUCfg);
-CREATE_CONFIGURATION(XFMArbiter, "xfm", theXFMCfg);
+CREATE_CONFIGURATION(FetchAddressGenerate, "fag", theFAGCfg);
+CREATE_CONFIGURATION(uFetch, "ufetch", theuFetchCfg);
+CREATE_CONFIGURATION(PortCombiner, "combiner", theCombinerCfg);
+CREATE_CONFIGURATION(armDecoder, "decoder", theDecoderCfg);
+CREATE_CONFIGURATION(uArchARM, "uarcharm", theuArchCfg);
 
+CREATE_CONFIGURATION(Cache, "L1d", theL1dCfg);
+CREATE_CONFIGURATION(CMPCache, "L2", theL2Cfg);
+
+
+CREATE_CONFIGURATION(MemoryLoopback, "memory", theMemoryCfg);
+CREATE_CONFIGURATION(MemoryMap, "memory-map", theMemoryMapCfg);
+CREATE_CONFIGURATION(MagicBreak, "magic-break", theMagicBreakCfg);
+CREATE_CONFIGURATION(XFMArbiter, "xfm", theXFMCfg);
 
 // You may optionally initialize configuration parameters from within this
 // function.  This initialization occur before the command line is processed,
@@ -89,47 +95,153 @@ CREATE_CONFIGURATION(XFMArbiter, "xfm", theXFMCfg);
 bool initializeParameters() {
   DBG_(Dev, (<< " initializing Parameters..."));
 
-  theBPWarmCfg.Cores.initialize(getSystemWidth());
-  theBPWarmCfg.BTBSets.initialize(512);
-  theBPWarmCfg.BTBWays.initialize(4);
+  theFAGCfg.Threads.initialize(1);
+  theFAGCfg.MaxFetchAddress.initialize(1);
+  theFAGCfg.MaxBPred.initialize(1);
+  theFAGCfg.BTBSets.initialize(512);
+  theFAGCfg.BTBWays.initialize(4);
 
-  //  theFeederCfg.SimicsQuantum.initialize(100);
-  theFeederCfg.CMPWidth.initialize(getSystemWidth());
-  theFeederCfg.TrackIFetch.initialize(true);
-  theFeederCfg.HousekeepingPeriod.initialize(1000);
-  theFeederCfg.SystemTickFrequency.initialize(0.0);
+  theuFetchCfg.Threads.initialize(1);
+  theuFetchCfg.FAQSize.initialize(1000);
+  theuFetchCfg.MaxFetchLines.initialize(2);
+  theuFetchCfg.MaxFetchInstructions.initialize(1000);
+  theuFetchCfg.ICacheLineSize.initialize(64);
+  theuFetchCfg.PerfectICache.initialize(true);
+  theuFetchCfg.PrefetchEnabled.initialize(true);
+  theuFetchCfg.Size.initialize(65536);
+  theuFetchCfg.Associativity.initialize(2);
+  theuFetchCfg.MissQueueSize.initialize(4);
+  theuFetchCfg.CleanEvict.initialize(false);
+  theuFetchCfg.SendAcks.initialize(true);
+  theuFetchCfg.UseReplyChannel.initialize(true);
+  theuFetchCfg.EvictOnSnoop.initialize(true);
+
+  theDecoderCfg.Multithread.initialize(false);
+  theDecoderCfg.FIQSize.initialize(1);
+  theDecoderCfg.DispatchWidth.initialize(1);
+
+  theuArchCfg.Multithread.initialize(false);
+  theuArchCfg.ROBSize.initialize(100);
+  theuArchCfg.SBSize.initialize(64);
+  theuArchCfg.NAWBypassSB.initialize(true);
+  theuArchCfg.NAWWaitAtSync.initialize(false);
+  theuArchCfg.RetireWidth.initialize(1);
+  theuArchCfg.SnoopPorts.initialize(1);
+  theuArchCfg.MemoryPorts.initialize(4);
+  theuArchCfg.StorePrefetches.initialize(30);
+  theuArchCfg.PrefetchEarly.initialize(false);
+  theuArchCfg.ConsistencyModel.initialize(1); // TSO
+  theuArchCfg.CoherenceUnit.initialize(64);
+  theuArchCfg.BreakOnResynchronize.initialize(false);
+  theuArchCfg.SpinControl.initialize(true);
+  theuArchCfg.SpeculativeOrder.initialize(false);
+  theuArchCfg.SpeculateOnAtomicValue.initialize(false);
+  theuArchCfg.SpeculateOnAtomicValuePerfect.initialize(false);
+  theuArchCfg.SpeculativeCheckpoints.initialize(0);
+  theuArchCfg.CheckpointThreshold.initialize(0);
+  theuArchCfg.InOrderExecute.initialize(true);
+  theuArchCfg.InOrderMemory.initialize(false);
+  theuArchCfg.OffChipLatency.initialize(320);
+  theuArchCfg.OnChipLatency.initialize(3);
+
+  theuArchCfg.EarlySGP.initialize(false);              // CMU-ONLY
+  theuArchCfg.TrackParallelAccesses.initialize(false); // CMU-ONLY
+
+  theuArchCfg.FpAddOpLatency.initialize(true);
+  theuArchCfg.FpAddOpPipelineResetTime.initialize(true);
+
+  theuArchCfg.FpCmpOpLatency.initialize(true);
+  theuArchCfg.FpCmpOpPipelineResetTime.initialize(true);
+  theuArchCfg.FpCvtOpLatency.initialize(true);
+  theuArchCfg.FpCvtOpPipelineResetTime.initialize(true);
+
+  theuArchCfg.FpDivOpLatency.initialize(true);
+  theuArchCfg.FpDivOpPipelineResetTime.initialize(true);
+  theuArchCfg.FpMultOpLatency.initialize(true);
+  theuArchCfg.FpMultOpPipelineResetTime.initialize(true);
+
+  theuArchCfg.FpSqrtOpLatency.initialize(true);
+  theuArchCfg.FpSqrtOpPipelineResetTime.initialize(true);
+  theuArchCfg.IntAluOpLatency.initialize(true);
+  theuArchCfg.IntAluOpPipelineResetTime.initialize(true);
+
+  theuArchCfg.IntDivOpLatency.initialize(true);
+  theuArchCfg.IntDivOpPipelineResetTime.initialize(true);
+  theuArchCfg.IntMultOpLatency.initialize(true);
+  theuArchCfg.IntMultOpPipelineResetTime.initialize(true);
+
+  theuArchCfg.NumFpAlu.initialize(true);
+  theuArchCfg.NumFpMult.initialize(true);
+  theuArchCfg.NumIntAlu.initialize(true);
+  theuArchCfg.NumIntMult.initialize(true);
 
   static const int K = 1024;
-  static const int M = 1024 * K;
 
-  theL1DCfg.MTWidth.initialize(1);
-  theL1DCfg.Size.initialize(32 * K);
-  theL1DCfg.Associativity.initialize(2);
-  theL1DCfg.BlockSize.initialize(64);
-  theL1DCfg.CleanEvictions.initialize(false);
-  theL1DCfg.CacheLevel.initialize(eL1);
-  theL1DCfg.TraceTracker.initialize(false);
-  theL1DCfg.NotifyReads.initialize(false);
-  theL1DCfg.NotifyWrites.initialize(false);
+  theL1dCfg.Cores.initialize(1);
+  theL1dCfg.BlockSize.initialize(64);
+  theL1dCfg.Ports.initialize(2);
+  theL1dCfg.PreQueueSizes.initialize(4);
+  theL1dCfg.TagLatency.initialize(0);
+  theL1dCfg.TagIssueLatency.initialize(1);
+  theL1dCfg.DataLatency.initialize(2);
+  theL1dCfg.DataIssueLatency.initialize(1);
+  theL1dCfg.CacheLevel.initialize(eL1);
+  theL1dCfg.QueueSizes.initialize(8);
+  theL1dCfg.MAFSize.initialize(32);
+  theL1dCfg.EvictBufferSize.initialize(8);
+  theL1dCfg.SnoopBufferSize.initialize(8);
+  theL1dCfg.ProbeFetchMiss.initialize(false);
+  theL1dCfg.EvictClean.initialize(true);
+  theL1dCfg.BusTime_NoData.initialize(1);
+  theL1dCfg.BusTime_Data.initialize(2);
+  theL1dCfg.MAFTargetsPerRequest.initialize(0);
+  theL1dCfg.FastEvictClean.initialize(false);
+  theL1dCfg.NoBus.initialize(false);
+  theL1dCfg.Banks.initialize(1);
+  theL1dCfg.TraceAddress.initialize(0);
+  theL1dCfg.CacheType.initialize("InclusiveMESI");
+  theL1dCfg.ArrayConfiguration.initialize("STD:size=65536:assoc=4:repl=LRU");
+  theL1dCfg.EvictOnSnoop.initialize(true);
+  theL1dCfg.UseReplyChannel.initialize(true);
 
-  theL1ICfg.MTWidth.initialize(1);
-  theL1ICfg.Size.initialize(32 * K);
-  theL1ICfg.Associativity.initialize(2);
-  theL1ICfg.BlockSize.initialize(64);
-  theL1ICfg.CleanEvictions.initialize(false);
-  theL1ICfg.CacheLevel.initialize(eL1I);
-  theL1ICfg.TraceTracker.initialize(false);
-  theL1ICfg.NotifyReads.initialize(false);
-  theL1ICfg.NotifyWrites.initialize(false);
+  theL1dCfg.GZipFlexpoints.initialize(false);
+  theL1dCfg.TextFlexpoints.initialize(false);
+  theL1dCfg.EvictWritableHasData.initialize(false);
 
-  theL2Cfg.CMPWidth.initialize(getSystemWidth());
-  theL2Cfg.Size.initialize(8 * M);
-  theL2Cfg.Associativity.initialize(8);
+  theL2Cfg.Cores.initialize(2);
   theL2Cfg.BlockSize.initialize(64);
-  theL2Cfg.CleanEvictions.initialize(false);
+  theL2Cfg.Banks.initialize(1);
+  theL2Cfg.BankInterleaving.initialize(64);
+  theL2Cfg.Groups.initialize(1);
+  theL2Cfg.GroupInterleaving.initialize(4096);
+  theL2Cfg.DirLatency.initialize(3);
+  theL2Cfg.DirIssueLatency.initialize(1);
+  theL2Cfg.TagLatency.initialize(1);
+  theL2Cfg.TagIssueLatency.initialize(1);
+  theL2Cfg.DataLatency.initialize(7);
+  theL2Cfg.DataIssueLatency.initialize(1);
+  theL2Cfg.QueueSize.initialize(8);
+  theL2Cfg.MAFSize.initialize(32);
+  theL2Cfg.DirEvictBufferSize.initialize(16);
+  theL2Cfg.CacheEvictBufferSize.initialize(16);
+  theL2Cfg.Policy.initialize("NonInclusiveMESI");
+  theL2Cfg.DirectoryType.initialize("infinite");
+  theL2Cfg.DirectoryConfig.initialize("");
   theL2Cfg.CacheLevel.initialize(eL2);
-  theL2Cfg.TraceTracker.initialize(false);
-  theL2Cfg.SeparateID.initialize(true);
+  theL2Cfg.EvictClean.initialize(false);
+  theL2Cfg.ArrayConfiguration.initialize("STD:sets=1024:assoc=16:repl=LRU");
+
+  theL2Cfg.ControllerType.initialize("Default");
+
+  theMemoryCfg.Delay.initialize(1);
+  theMemoryCfg.MaxRequests.initialize(64);
+  theMemoryCfg.UseFetchReply.initialize(true);
+
+  theMemoryMapCfg.PageSize.initialize(8 * K);
+  theMemoryMapCfg.NumNodes.initialize(1);
+  theMemoryMapCfg.RoundRobin.initialize(true);
+  theMemoryMapCfg.CreatePageMap.initialize(true);
+  theMemoryMapCfg.ReadPageMap.initialize(true);
 
   theMagicBreakCfg.CkptCycleInterval.initialize(0);
   theMagicBreakCfg.CkptCycleName.initialize(0);
@@ -149,18 +261,15 @@ bool initializeParameters() {
   theMMUCfg.Cores.initialize(1);
   theMMUCfg.iTLBSize.initialize(64);
   theMMUCfg.dTLBSize.initialize(64);
-
+  theMMUCfg.PerfectTLB.initialize(true);
   theXFMCfg.OffloadTime.initialize(0);
   theXFMCfg.MaxEnqueued.initialize(-1);
 
-  theFlexus->setStatInterval("10000000");     // 10M
-  theFlexus->setProfileInterval("10000000");  // 10M
-  theFlexus->setTimestampInterval("1000000"); // 1M
+  theFlexus->setStatInterval("100000");
+  theFlexus->setProfileInterval("10000000");
+  theFlexus->setTimestampInterval("50000");
 
-
-
-
-  return false; // Abort simulation if parameters are not initialized
+  return true; // true = Abort simulation if parameters are not initialized
 }
 
 #include FLEXUS_END_COMPONENT_CONFIGURATION_SECTION()
@@ -169,55 +278,81 @@ bool initializeParameters() {
 #include FLEXUS_BEGIN_COMPONENT_INSTANTIATION_SECTION()
 // All component Instances are created here.  This section
 // also creates handles for each component
-
-FLEXUS_INSTANTIATE_COMPONENT( DecoupledFeeder, theFeederCfg, theFeeder );
-FLEXUS_INSTANTIATE_COMPONENT_ARRAY( BPWarm, theBPWarmCfg, theBPWarm, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
-FLEXUS_INSTANTIATE_COMPONENT_ARRAY( FastCache, theL1DCfg, theL1D, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
-FLEXUS_INSTANTIATE_COMPONENT_ARRAY( FastCache, theL1ICfg, theL1I, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
-FLEXUS_INSTANTIATE_COMPONENT( FastCMPCache, theL2Cfg, theL2 );
-FLEXUS_INSTANTIATE_COMPONENT( FastMemoryLoopback, theMemoryCfg, theMemory );
+//
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( FetchAddressGenerate, theFAGCfg, theFAG, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( uFetch, theuFetchCfg, theuFetch, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( PortCombiner, theCombinerCfg, theuFetchCombiner, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( armDecoder, theDecoderCfg, theDecoder, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( uArchARM, theuArchCfg, theuArch, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( Cache, theL1dCfg, theL1d, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( MMU , theMMUCfg, theMMU, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( CMPCache, theL2Cfg, theL2, SCALE_WITH_SYSTEM_WIDTH, DIVIDE, 1 );
+FLEXUS_INSTANTIATE_COMPONENT_ARRAY( MemoryLoopback, theMemoryCfg, theMemory, SCALE_WITH_SYSTEM_WIDTH, DIVIDE, 1 );
+// The above parameter dictates the number of memory controllers in the system.
+// It should always match the postload, and should be set to 1 for single core setup.
+FLEXUS_INSTANTIATE_COMPONENT( MemoryMap, theMemoryMapCfg, theMemoryMap );
 FLEXUS_INSTANTIATE_COMPONENT( MagicBreak, theMagicBreakCfg, theMagicBreak );
 FLEXUS_INSTANTIATE_COMPONENT( XFMArbiter, theXFMCfg, theXFMArb );
-FLEXUS_INSTANTIATE_COMPONENT_ARRAY( MMU , theMMUCfg, theMMU, SCALE_WITH_SYSTEM_WIDTH, MULTIPLY, 1);
-
-//FLEXUS_INSTANTIATE_COMPONENT( WhiteBox, theWhiteBoxCfg, theWhiteBox );
-
 #include FLEXUS_END_COMPONENT_INSTANTIATION_SECTION()
 
 #include FLEXUS_BEGIN_COMPONENT_WIRING_SECTION()
 
 //FROM                                  TO
 //====                                  ==
-WIRE(theFeeder, ToL1D,                  theL1D, RequestIn)
-WIRE(theFeeder, ToL1I,                  theL1I, FetchRequestIn)
-WIRE(theFeeder, ToBPred,                theBPWarm, ITraceInModern)
-WIRE(theFeeder, ToDMA,                  theMemory, DMA)
-WIRE(theFeeder, ToMMU,                  theMMU, TLBReqIn)
+//FAG to Fetch
+WIRE( theFAG, FetchAddrOut,             theuFetch, FetchAddressIn         )
+WIRE( theFAG, AvailableFAQ,             theuFetch, AvailableFAQOut        )
+WIRE( theFAG, uArchHalted,              theuArch, CoreHalted              )
 
-WIRE(theL1D, RequestOut,                theL2, RequestIn)
-WIRE(theL1I, RequestOut,                theL2, FetchRequestIn)
+//Fetch to Decoder
+WIRE( theuFetch, AvailableFIQ,          theDecoder, AvailableFIQOut       )
+WIRE( theuFetch, FetchBundleOut,        theDecoder, FetchBundleIn         )
+WIRE( theDecoder, SquashOut,            theuFetch, SquashIn               )
+WIRE( theuArch, ChangeCPUState,         theuFetch, ChangeCPUState         )
 
-WIRE(theL2, SnoopOutI,                  theL1I, SnoopIn)
-WIRE(theL2, SnoopOutD,                  theL1D, SnoopIn)
+// Fetch to MMU
+WIRE( theuFetch, iTranslationOut,       theMMU, iRequestIn                )
+WIRE( theMMU, iTranslationReply,        theuFetch, iTranslationIn         )
 
-WIRE(theL1D, RegionNotify,              theL2, RegionNotify)
+// uArch to MMU
+WIRE( theuArch, dTranslationOut,        theMMU, dRequestIn                )
+WIRE( theMMU, dTranslationReply,        theuArch, dTranslationIn          )
+WIRE( theMMU, MemoryRequestOut,         theuArch, MemoryRequestIn         )
+WIRE(theuArch, ResyncOut,               theMMU,   ResyncIn                )
+WIRE(theMMU, ResyncOut,                 theuFetch,   ResyncIn             )
 
-WIRE(theL2, RequestOut,                 theMemory, FromCache)
-WIRE(theL2, RegionProbe,                theL1D, RegionProbe)
+//Decoder to uArch
+WIRE( theDecoder, AvailableDispatchIn,  theuArch, AvailableDispatchOut    )
+WIRE( theDecoder, DispatchOut,          theuArch, DispatchIn              )
+WIRE( theuArch, SquashOut,              theDecoder, SquashIn              )
 
-WIRE(theMemory, ToCache,                theL2, SnoopIn)
+WIRE( theDecoder, DispatchOut,          theXFMArb, DispatchIn              )
 
-//Fetch, L1I and Execute
+//uArch to FAG
+WIRE( theuArch, BranchFeedbackOut,      theFAG, BranchFeedbackIn          )
+WIRE( theuArch, RedirectOut,            theFAG, RedirectIn                )
 
+
+//uArch to L1 D cache
+WIRE( theuArch, MemoryOut_Request,      theL1d, FrontSideIn_Request       )
+WIRE( theuArch, MemoryOut_Snoop,        theL1d, FrontSideIn_Snoop         )
+WIRE( theL1d, FrontSideOut_D,           theuArch, MemoryIn                )
+
+WIRE( theuFetchCombiner, FetchMissOut,  theuFetch, FetchMissIn            )
 
 #include FLEXUS_END_COMPONENT_WIRING_SECTION()
 
 #include FLEXUS_BEGIN_DRIVE_ORDER_SECTION()
 
-DRIVE( theMagicBreak, TickDrive )
-, DRIVE( theL1D, UpdateStatsDrive )
-, DRIVE( theL1I, UpdateStatsDrive )
-, DRIVE( theL2, UpdateStatsDrive )
+DRIVE( theuFetch, uFetchDrive )
+, DRIVE( theFAG, FAGDrive )
+, DRIVE( theuArch, uArchDrive )
+, DRIVE( theMMU, MMUDrive  )
+, DRIVE( theDecoder, DecoderDrive )
+, DRIVE( theMemory, LoopbackDrive )
+, DRIVE( theL2, CMPCacheDrive )
+, DRIVE( theL1d, CacheDrive )
+, DRIVE( theMagicBreak, TickDrive )
 
 #include FLEXUS_END_DRIVE_ORDER_SECTION()
     // clang-format on

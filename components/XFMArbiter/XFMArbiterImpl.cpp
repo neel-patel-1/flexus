@@ -94,9 +94,12 @@ public:
       boost::intrusive_ptr<narmDecoder::armInstruction> insn =
           boost::polymorphic_pointer_downcast<narmDecoder::armInstruction>(anInstruction);
       if (insn->isPageFault()){
-        DBG_(VVerb, (<< "XFMArbiter Intercepted page fault: insn="<< *insn <<
-                      "cycle="<<Flexus::Core::theFlexus->cycleCount()));
+        DBG_(Crit, (<< "XFMArbiter Intercepted page fault: insn=="));
+        // DBG_(Crit, (<< "XFMArbiter Intercepted page fault: insn=="<< *insn <<
+        //               "cycle=="<<Flexus::Core::theFlexus->cycleCount()));
         // Flexus::Core::theFlexus->pause
+        // std::cout<< "XFMArbiter Intercepted page fault: insn="<< *insn <<
+        //               "cycle="<<Flexus::Core::theFlexus->cycleCount()));
       }
       // theCore->dispatch(insn);
     } catch (...) {

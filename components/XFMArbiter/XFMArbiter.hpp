@@ -58,17 +58,7 @@ COMPONENT_PARAMETERS(
 );
 
 COMPONENT_INTERFACE(
-  // PORT( PushOutput, int, getState )
   PORT( PushInput, boost::intrusive_ptr< AbstractInstruction >, DispatchIn)
-  // PORT( PullInput, int, pullStateIn )
-  // PORT( PullOutput, int, pullStateRet )
-
-  
-  
-  // DYNAMIC_PORT_ARRAY( PushInput, int, setStateDyn )
-  // DYNAMIC_PORT_ARRAY( PushOutput, int, getStateDyn )
-  // DYNAMIC_PORT_ARRAY( PullInput, int, pullStateInDyn )
-  // DYNAMIC_PORT_ARRAY( PullOutput, int, pullStateRetDyn )
   DRIVE( XFMDrive )
 );
 
