@@ -56,7 +56,8 @@ fi
 JOBS=$(($(getconf _NPROCESSORS_ONLN) + 1))
 echo "=== Using ${JOBS} simultaneous jobs ==="
 
-export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-
-cmake -DSIMULATOR=Harness . 
+cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++\
+ -DBOOST_INCLUDEDIR=$(pwd)/boost_1_70_0-build/include\
+  -DBOOST_LIBRARYDIR=$(pwd)/boost_1_70_0-build/lib -DSIMULATOR=Harness .
+LD_LIBRARY_PATH="$SPACK_ROOT/var/spack/environments/qflex/.spack-env/view/lib:$(pwd)/boost_1_70_0-build/lib/lib"\
 make -j${JOBS}

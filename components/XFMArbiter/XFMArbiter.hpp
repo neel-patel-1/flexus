@@ -44,6 +44,9 @@
 //  DO-NOT-REMOVE end-copyright-block
 
 #include <core/simulator_layout.hpp>
+#include <core/flexus.hpp>
+#include <components/CommonQEMU/Slices/AbstractInstruction.hpp>
+#include <components/uFetch/uFetchTypes.hpp>
 
 // clang-format off
 #define FLEXUS_BEGIN_COMPONENT XFMArbiter

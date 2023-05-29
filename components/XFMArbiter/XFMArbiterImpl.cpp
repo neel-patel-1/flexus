@@ -44,11 +44,23 @@
 //  DO-NOT-REMOVE end-copyright-block
 #include <iostream>
 #include <components/XFMArbiter/XFMArbiter.hpp>
+#include <components/armDecoder/armInstruction.hpp>
+
+#include <components/CommonQEMU/Slices/AbstractInstruction.hpp>
+#include <components/uFetch/uFetchTypes.hpp>
+
+#include <core/boost_extensions/intrusive_ptr.hpp>
+#include <core/types.hpp>
+#include <boost/polymorphic_pointer_cast.hpp>
+#include <boost/throw_exception.hpp>
 
 #define FLEXUS_BEGIN_COMPONENT XFMArbiter
 #include FLEXUS_BEGIN_COMPONENT_IMPLEMENTATION()
 
 namespace nXFMArbiter {
+using namespace Flexus;
+using namespace Core;
+using namespace SharedTypes;
 
 class FLEXUS_COMPONENT(XFMArbiter) {
   FLEXUS_COMPONENT_IMPL(XFMArbiter);
@@ -65,15 +77,11 @@ public:
   // Initialization
   void initialize() {
     std::cout << "Called Init \n";
-    curState = cfg.InitState;
+    
   }
 
   void finalize() {
-    std::cout << "Final state is:" << curState << std::endl;
-  }
-
-  int getStateNonWire() {
-    return curState;
+    std::cout << "Final " << std::endl;
   }
 
   FLEXUS_PORT_ALWAYS_AVAILABLE(DispatchIn);
@@ -83,10 +91,12 @@ public:
     DBG_(VVerb, (<< "Get the inst in XFMArbiter: "));
 
     try {
-      boost::intrusive_ptr<Instruction> insn =
-          boost::polymorphic_pointer_downcast<armInstruction>(anInstruction);
-      if (insn.isPageFault()){
-        DBG_(VVerb, (<< "XFMArbiter Intercepted page fault: "));
+      boost::intrusive_ptr<narmDecoder::armInstruction> insn =
+          boost::polymorphic_pointer_downcast<narmDecoder::armInstruction>(anInstruction);
+      if (insn->isPageFault()){
+        DBG_(VVerb, (<< "XFMArbiter Intercepted page fault: insn="<< *insn <<
+                      "cycle="<<Flexus::Core::theFlexus->cycleCount()));
+        // Flexus::Core::theFlexus->pause
       }
       // theCore->dispatch(insn);
     } catch (...) {
@@ -96,26 +106,10 @@ public:
     
   }
 
-
-  // pullStateRetDyn Dynamic PullOutput Port
-  // =======================================
-  FLEXUS_PORT_ARRAY_ALWAYS_AVAILABLE(pullStateRetDyn);
-  int pull(interface::pullStateRetDyn const &, index_t anIndex) {
-    return anIndex * 1000;
-  }
   // Drive Interfaces
   void drive(interface::XFMDrive const &) {
     curState++;
     std::cout << "Drive Called. Sending incremented state " << curState << " over Port:getState\n";
-    if (FLEXUS_CHANNEL(getState).available())
-      FLEXUS_CHANNEL(getState) << curState;
-    if (FLEXUS_CHANNEL(pullStateIn).available())
-      FLEXUS_CHANNEL(pullStateIn) >> curState;
-    int out = 20;
-    if (FLEXUS_CHANNEL_ARRAY(getStateDyn, 3).available())
-      FLEXUS_CHANNEL_ARRAY(getStateDyn, 3) << out;
-    if (FLEXUS_CHANNEL_ARRAY(pullStateInDyn, 3).available())
-      FLEXUS_CHANNEL_ARRAY(pullStateInDyn, 3) >> curState;
   }
 
 private:
@@ -124,23 +118,7 @@ private:
 
 } // End namespace nXFM
 
-FLEXUS_COMPONENT_INSTANTIATOR(XFMArbiter, nXFM);
-
-FLEXUS_PORT_ARRAY_WIDTH(XFMArbiter, setStateDyn) {
-  return 4;
-}
-
-FLEXUS_PORT_ARRAY_WIDTH(XFMArbiter, getStateDyn) {
-  return 4;
-}
-
-FLEXUS_PORT_ARRAY_WIDTH(XFMArbiter, pullStateInDyn) {
-  return 4;
-}
-
-FLEXUS_PORT_ARRAY_WIDTH(XFMArbiter, pullStateRetDyn) {
-  return 4;
-}
+FLEXUS_COMPONENT_INSTANTIATOR(XFMArbiter, nXFMArbiter);
 
 #include FLEXUS_END_COMPONENT_IMPLEMENTATION()
 #define FLEXUS_END_COMPONENT XFMArbiter
